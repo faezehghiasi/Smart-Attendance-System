@@ -60,10 +60,8 @@ int main(void) {
             LCD_clear();
             if (key_pressed == '1') {
                 while(1){
-                sei();
                 LCD_clear();
                 Attendance_Ready();
-                //unsigned char key2=get_key();
                 if (key_pressed == '1'){
                     LCD_clear();
                     Submit_Student_Code();
@@ -204,7 +202,6 @@ void Submit_Student_Code(){
     unsigned char i=0;
     while(1){
         unsigned char digit;
-        sei();
         digit=key_pressed;
         if(i>=8 && digit !='#'){
             Wrong_format_of_stu_ID();
