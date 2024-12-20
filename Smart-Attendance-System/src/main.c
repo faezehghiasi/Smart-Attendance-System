@@ -56,20 +56,29 @@ int main(void) {
             display_menu(current_page);
             menu_needs_update = 0;
         }
+        while (key_pressed==0);
         if (key_pressed) {
             LCD_clear();
             if (key_pressed == '1') {
                 while(1){
+
                 LCD_clear();
                 Attendance_Ready();
+                key_pressed=0;
+                while(key_pressed==0);
                 if (key_pressed == '1'){
                     LCD_clear();
                     Submit_Student_Code();
+                    
                 }
                 else if(key_pressed =='2'){
+                    LCD_clear();
+                    display_menu(current_page);
                     break;
+
                 }
-            }
+                }
+                
             } else if (key_pressed == '2') {
                 LCD_string("Student Manage");
             } else if (key_pressed == '3') {
@@ -94,9 +103,11 @@ int main(void) {
             key_pressed = 0;
 
         }
-    
-    return 0;
+        
     }
+    
+        return 0;
+
 }
 
 void display_menu(int page) {
@@ -202,6 +213,9 @@ void Submit_Student_Code(){
     unsigned char i=0;
     while(1){
         unsigned char digit;
+        key_pressed=0;
+        while(key_pressed==0);
+        if(key_pressed){
         digit=key_pressed;
         if(i>=8 && digit !='#'){
             Wrong_format_of_stu_ID();
@@ -238,7 +252,7 @@ void Submit_Student_Code(){
         }
     }
 
-
+    }
 }
 bool check_stu_id(char * stuId){
     if (stuId[0]!='4' || stuId[1]!='0' || stuId[2]!='1')
