@@ -1,5 +1,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
+#include <stdlib.h>
+#include <stdbool.h>
 
 #define LCD_PORT PORTC
 #define LCD_DDR DDRC
@@ -29,6 +31,15 @@ unsigned char scan_keypad(void);
 unsigned char get_key(void);
 
 void display_menu(int page);
+void Attendance_Ready();
+void Submit_Student_Code();
+uint8_t EEPROM_Read(uint16_t address);
+uint16_t GET_EEPROM_LAST_ADDRESS();
+void EEPROM_Write(uint16_t address, uint8_t data);
+void WRITE_STU_ID_IN_EEPROM(unsigned long int stuId);
+void BUZZER();
+bool check_stu_id(char * stuId);
+void Wrong_format_of_stu_ID();
 
 int main(void) {
     LCD_init();
@@ -42,9 +53,18 @@ int main(void) {
         key = get_key();
 
         if (key == '1') {
-            LCD_clear();
-            LCD_string("Attendance Init");
-            _delay_ms(2000);
+            while(1){
+                LCD_clear();
+                Attendance_Ready();
+                unsigned char key2=get_key();
+                if (key2 == '1'){
+                    LCD_clear();
+                    Submit_Student_Code();
+                }
+                else if(key2 =='2'){
+                    break;
+                }
+            }
         } else if (key == '2') {
             LCD_clear();
             LCD_string("Student Manage");
@@ -173,4 +193,127 @@ unsigned char get_key(void) {
 
     while (scan_keypad() != 0xFF);
     return key;
+}
+void Attendance_Ready(){
+    LCD_clear();
+    LCD_string("1.Submit Student Code");
+    LCD_command(0xC0);
+    LCD_string("2.EXIT");
+
+}
+void Submit_Student_Code(){
+    LCD_string("Enter your Student Code:");
+    char Student_Code[8];
+    unsigned char i=0;
+    while(1){
+        unsigned char digit;
+        digit=get_key();
+        if(i>=8 && digit !='#'){
+            Wrong_format_of_stu_ID();
+            break;
+        }
+        LCD_data(digit);
+         if(i==8 && digit=='#'){
+            unsigned long int stuID=atoi(Student_Code);
+
+            if(check_stu_id(Student_Code)==1){
+                LCD_command(0xC0);
+                LCD_string("Your Student Code has been submitted");
+                WRITE_STU_ID_IN_EEPROM(stuID);
+                _delay_ms(20);
+                break;
+            }
+            else{
+                Wrong_format_of_stu_ID();
+                break;
+            }
+        }
+        else if(-1<i<8 && digit=='#'){
+            Wrong_format_of_stu_ID();
+            break;
+        }
+
+        if(0<=i<8 ){
+            
+            
+            
+
+        Student_Code[i]=digit;
+        i++;
+        }
+    }
+
+
+}
+bool check_stu_id(char * stuId){
+    if (stuId[0]!='4' || stuId[1]!='0' || stuId[2]!='1')
+        return false;
+    else
+        return true;
+}
+void Wrong_format_of_stu_ID(){
+    BUZZER();
+    LCD_command(0xC0);
+    LCD_string("Your Student Code format is wrong");
+    _delay_ms(20);
+}
+
+uint8_t EEPROM_Read(uint16_t address) {
+    while(EECR & (1<<EEWE));
+    // Set up the address register (EEAR)
+    EEARH = (address >> 8);  // Set the high byte of the address
+    EEARL = (address & 0xFF); // Set the low byte of the address
+
+    // Start the read operation
+    EECR |= (1 << EERE);  
+
+    // Return the read data
+    return EEDR;  // Data is stored in the EEDR (EEPROM Data Register)
+
+}
+
+void EEPROM_Write(uint16_t address, uint8_t data) {
+    // Wait until the previous write operation is complete
+    while (EECR & (1 << EEWE)) {
+        // Wait for EEWE (EEPROM Write Enable) to clear
+    }
+
+    // Set up the address register (EEAR)
+    EEARH = (address >> 8); // Set the high byte of the address
+    EEARL = (address & 0xFF); // Set the low byte of the address
+
+    // Set up the data register (EEDR)
+    EEDR = data;
+
+    // Start the write operation by setting the EEWE bit
+    EECR |= (1 << EEMWE); // Enable master write
+    EECR |= (1 << EEWE);  // Start the write operation
+}
+uint16_t GET_EEPROM_LAST_ADDRESS(){
+    
+    uint16_t address_of_EEROM=0xFFFF;
+    address_of_EEROM &=(EEPROM_Read(0x03FE));
+    address_of_EEROM<<=8;
+    address_of_EEROM |= 0xFF;
+    address_of_EEROM &=(EEPROM_Read(0x3FF));
+    return address_of_EEROM;
+}
+void WRITE_STU_ID_IN_EEPROM(unsigned long int stuId){
+    uint16_t address=GET_EEPROM_LAST_ADDRESS();
+    EEPROM_Write(address,(stuId>>24)& 0xFF);
+    EEPROM_Write(address+1,(stuId>>16)& 0xFF);
+    EEPROM_Write(address+2,(stuId>>8)& 0xFF);
+    EEPROM_Write(address+3,(stuId)& 0xFF);
+    address+=4;
+    EEPROM_Write(0x03fe,(address>>8)& 0xFF);
+    EEPROM_Write(0x03ff, address& 0xFF);
+
+
+}
+void BUZZER(){
+    DDRB |=(1<<2);
+    PORTB |=(1<<2);
+    _delay_ms(50);
+    PORTB &=~(1<<2);
+
 }
