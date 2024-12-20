@@ -43,6 +43,8 @@ void WRITE_STU_ID_IN_EEPROM(unsigned long int stuId);
 void BUZZER();
 bool check_stu_id(char * stuId);
 void Wrong_format_of_stu_ID();
+void GET_ARRAY_OF_STUDENTS(unsigned long int * students);
+unsigned long int  READ_STU_ID_FROM_EEPROM(uint16_t address);
 
 int main(void) {
     LCD_init();
@@ -81,6 +83,8 @@ int main(void) {
                 
             } else if (key_pressed == '2') {
                 LCD_string("Student Manage");
+                long int *students = (long int *)malloc(((GET_EEPROM_LAST_ADDRESS()-1)/4) * sizeof(long int));
+                GET_ARRAY_OF_STUDENTS(students);
             } else if (key_pressed == '3') {
                 LCD_string("View Present");
             } else if (key_pressed == '4') {
@@ -319,6 +323,16 @@ void WRITE_STU_ID_IN_EEPROM(unsigned long int stuId){
 
 
 }
+unsigned long int  READ_STU_ID_FROM_EEPROM(uint16_t address){
+    long int stuID = 0;
+
+    stuID |= (long int)EEPROM_Read(address) << 24;  // MSB
+    stuID |= (long int)EEPROM_Read(address + 1) << 16;
+    stuID |= (long int)EEPROM_Read(address + 2) << 8;
+    stuID |= (long int)EEPROM_Read(address + 3);     // LSB
+
+    return stuID;
+}
 void BUZZER(){
     DDRB |=(1<<2);
     PORTB |=(1<<2);
@@ -336,5 +350,13 @@ ISR(INT0_vect) {
     }
 
     KEY_PRT = 0x70; //اینجا دوباره حالت سطر هارو به حالت اولیه بر میکردونم
+
+}
+
+void GET_ARRAY_OF_STUDENTS(unsigned long int * students){
+    unsigned char size_of_array=(GET_EEPROM_LAST_ADDRESS()-1)/4;
+    for (unsigned char i=0;i<size_of_array;i++){
+        students[i]=READ_STU_ID_FROM_EEPROM(i*4);
+    }
 
 }
