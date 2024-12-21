@@ -3,6 +3,7 @@
 #include <util/delay.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 #include "LCD.h"
 #include"Keypad.h"
@@ -21,6 +22,7 @@ void return_to_main_menu(void);
 bool handle_student_search(unsigned long int stuID);
 void display_student_management_menu(void);
 void Student_Management(void);
+void display_all_students();
 
 
 
@@ -28,6 +30,7 @@ int main(void) {
     LCD_init();
     keypad_init();
     init_interrupt();
+    SET_NUM_OF_STUDENTS(0);
     sei();
 
     while (1) {
@@ -63,7 +66,7 @@ int main(void) {
             } else if (key_pressed == '2') {
                 Student_Management();
             } else if (key_pressed == '3') {
-                LCD_string("View Present");
+              
             } else if (key_pressed == '4') {
                 LCD_string("Temp Monitoring");
             } else if (key_pressed == '5') {
@@ -253,6 +256,7 @@ void return_to_main_menu(void) {
 void invalid_key_pressed(void) {
     LCD_clear();
     LCD_string("Invalid Key!");
-    _delay_ms(1000);
+    _delay_ms(100);
     display_menu(current_page);
 }
+
