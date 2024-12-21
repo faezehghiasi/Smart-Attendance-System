@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <string.h>
 #include "LCD.h"
-#include"Keypad.h"
-#include"globals.h"
-#include "EEROM.h"
+#include "Keypad.h"
+#include "globals.h"
+#include "EEPROM.h"
 
 void display_menu(int page);
 void Attendance_Ready();
@@ -20,17 +20,15 @@ unsigned long int get_student_id(void);
 void invalid_key_pressed(void);
 void return_to_main_menu(void);
 bool handle_student_search(unsigned long int stuID);
-void display_student_management_menu(void);
+void display_student_management_menu_page(int page);
 void Student_Management(void);
 void display_all_students();
-
-
 
 int main(void) {
     LCD_init();
     keypad_init();
     init_interrupt();
-    SET_NUM_OF_STUDENTS(0);
+    SET_NUM_OF_STUDENTS(0); // Initialize the number of students in EEPROM
     sei();
 
     while (1) {
@@ -39,34 +37,30 @@ int main(void) {
             display_menu(current_page);
             menu_needs_update = 0;
         }
-        while (key_pressed==0);
+        while (key_pressed == 0);
         if (key_pressed) {
             LCD_clear();
             if (key_pressed == '1') {
-                while(1){
-
+                while (1) {
                     LCD_clear();
                     Attendance_Ready();
-                    key_pressed=0;
-                    while(key_pressed==0);
-                    if (key_pressed == '1'){
+                    key_pressed = 0;
+                    while (key_pressed == 0);
+                    if (key_pressed == '1') {
                         LCD_clear();
                         Submit_Student_Code();
-                        
-                    }
-                    else if(key_pressed =='2'){
+                    } else if (key_pressed == '2') {
                         return_to_main_menu();
                         break;
-                    }
-                    else {
+                    } else {
                         invalid_key_pressed();
                     }
                 }
-                
             } else if (key_pressed == '2') {
                 Student_Management();
             } else if (key_pressed == '3') {
-              
+                display_all_students();
+                return_to_main_menu();
             } else if (key_pressed == '4') {
                 LCD_string("Temp Monitoring");
             } else if (key_pressed == '5') {
@@ -85,13 +79,10 @@ int main(void) {
                 LCD_string("Invalid Key");
             }
             key_pressed = 0;
-
         }
-        
     }
-    
-        return 0;
 
+    return 0;
 }
 
 void display_menu(int page) {
@@ -115,137 +106,158 @@ void display_menu(int page) {
     }
 }
 
-
-
-void Attendance_Ready(){
+void Attendance_Ready() {
     LCD_clear();
     LCD_string("1.Submit Student Code");
     LCD_command(0xC0);
     LCD_string("2.EXIT");
-
 }
-void Submit_Student_Code(){
+
+void Submit_Student_Code() {
     unsigned long int studentCode = get_student_id();
     LCD_command(0xC0);
     LCD_string("Code submitted");
     WRITE_STU_ID_IN_EEPROM(studentCode);
     _delay_ms(20);
-
 }
+
 bool check_stu_id(char *stuId) {
     if (strlen(stuId) != 8 || strncmp(stuId, "401", 3) != 0)
         return false;
     return true;
 }
 
-void Wrong_format_of_stu_ID(){
+void Wrong_format_of_stu_ID() {
     BUZZER();
     LCD_command(0xC0);
     LCD_string("Your Student Code format is wrong");
     _delay_ms(20);
 }
 
-void BUZZER(){
-    DDRB |=(1<<2);
-    PORTB |=(1<<2);
+void BUZZER() {
+    DDRB |= (1 << 2);
+    PORTB |= (1 << 2);
     _delay_ms(50);
-    PORTB &=~(1<<2);
+    PORTB &= ~(1 << 2);
 }
+
 unsigned long int get_student_id(void) {
-    char Student_Code[9] = {0};  // Buffer for the student ID (8 digits max + null terminator)
+    char Student_Code[9] = {0}; 
     unsigned char i = 0;
 
     LCD_clear();
-    LCD_string("Enter Student Code:");  // Prompt user to enter student code
+    LCD_string("Enter Student Code:");
 
     while (1) {
         key_pressed = 0;
 
-        // Wait for a key press
         while (key_pressed == 0);
 
         // Handle '#' as the end of input
         if (key_pressed == '#') {
-            if (check_stu_id(Student_Code)) {  // Validate the student code
-                return atol(Student_Code);  // Convert and return the valid student ID
+            if (check_stu_id(Student_Code)) { 
+                return atol(Student_Code);   
             } else {
-                Wrong_format_of_stu_ID();  // Handle invalid format
-                memset(Student_Code, 0, sizeof(Student_Code));  // Reset input buffer
-                i = 0;  // Reset index
+                Wrong_format_of_stu_ID(); 
+                memset(Student_Code, 0, sizeof(Student_Code)); 
+                i = 0; 
                 LCD_clear();
-                LCD_string("Enter Student Code:");  // Prompt user again
+                LCD_string("Enter Student Code:"); 
             }
-        }
-        // Handle numeric input
-        else if (key_pressed >= '0' && key_pressed <= '9') {
-            if (i < 8) {  // Allow up to 8 digits
+        } else if (key_pressed >= '0' && key_pressed <= '9') {
+            if (i < 8) { 
                 Student_Code[i++] = key_pressed;
-                LCD_data(key_pressed);  // Display the entered digit
-            } else {  // If user enters more than 8 digits
+                LCD_data(key_pressed); 
+            } else { // If user enters more than 8 digits
                 Wrong_format_of_stu_ID();
-                memset(Student_Code, 0, sizeof(Student_Code));  // Reset input buffer
-                i = 0;  // Reset index
+                memset(Student_Code, 0, sizeof(Student_Code)); // Reset input buffer
+                i = 0; // Reset index
                 LCD_clear();
-                LCD_string("Enter Student Code:");  // Prompt user again
+                LCD_string("Enter Student Code:"); 
             }
-        } else {  // Handle invalid characters
+        } else { // Handle invalid characters
             Wrong_format_of_stu_ID();
-            memset(Student_Code, 0, sizeof(Student_Code));  // Reset input buffer
-            i = 0;  // Reset index
+            memset(Student_Code, 0, sizeof(Student_Code)); 
+            i = 0; 
             LCD_clear();
-            LCD_string("Enter Student Code:");  // Prompt user again
+            LCD_string("Enter Student Code:"); 
         }
     }
 }
 
 void Student_Management(void) {
+    int current_page = 1;
     while (1) {
-        display_student_management_menu();
+        display_student_management_menu_page(current_page);
 
         key_pressed = 0;
 
-        // Wait for a key press
         while (key_pressed == 0);
 
-        if (key_pressed == '1') {
+        if (key_pressed == '1' && current_page == 1) {
             unsigned long int studentCode = get_student_id();
-            if(handle_student_search(studentCode)){
+            if (handle_student_search(studentCode)) {
                 LCD_command(0xC0);
                 LCD_string("Student Present!");
-                _delay_ms(30);
-
-            }
-            else{
+                _delay_ms(200);
+            } else {
                 LCD_command(0xC0);
                 LCD_string("Student Absent!");
-                 _delay_ms(30);
+                _delay_ms(200);
             }
-
-        } else if (key_pressed == '2') {
+        } else if (key_pressed == '2' && current_page == 1) {
+            unsigned long int studentCode = get_student_id();
+            if (delete_student_from_eeprom(studentCode)) {
+                LCD_command(0xC0);
+                LCD_string("Student Deleted!");
+                _delay_ms(200);
+            } else {
+                LCD_command(0xC0);
+                LCD_string("Not Found!");
+                _delay_ms(200);
+            }
+        } else if (key_pressed == '3' && current_page == 2) {
             return_to_main_menu();
             break;
+        } else if (key_pressed == '#') {
+            current_page++;
+            if (current_page > 2) {
+                current_page = 1;
+            }
+        } else if (key_pressed == '*') {
+            current_page--;
+            if (current_page < 1) {
+                current_page = 2;
+            }
         } else {
             invalid_key_pressed();
         }
     }
 }
-void display_student_management_menu(void) {
+
+void display_student_management_menu_page(int page) {
     LCD_clear();
-    LCD_string("1.Search Students");
-    LCD_command(0xC0);
-    LCD_string("2.Exit");
+    switch (page) {
+        case 1:
+            LCD_string("1.Search Students");
+            LCD_command(0xC0);
+            LCD_string("2.Delete Student");
+            break;
+        case 2:
+            LCD_string("3.Exit");
+    }
 }
 
 bool handle_student_search(unsigned long int stuID) {
-    uint16_t num_of_students = GET_NUM_OF_STUDENTS();  // تعداد دانشجویان ذخیره شده
+    uint16_t num_of_students = GET_NUM_OF_STUDENTS(); 
 
     for (uint16_t i = 0; i < num_of_students; i++) {
-        unsigned long int student_id = READ_STU_ID_FROM_EEPROM(i);  // خواندن شماره دانشجویی
+        unsigned long int student_id = READ_STU_ID_FROM_EEPROM(i); 
         if (student_id == stuID) {
-            return true;  // اگر شماره دانشجویی یافت شد
+            return true; 
         }
     }
-    return false;  // اگر شماره یافت نشد
+    return false;
 }
 
 void return_to_main_menu(void) {
@@ -253,6 +265,7 @@ void return_to_main_menu(void) {
     display_menu(current_page);
     key_pressed = 0;
 }
+
 void invalid_key_pressed(void) {
     LCD_clear();
     LCD_string("Invalid Key!");
@@ -260,3 +273,29 @@ void invalid_key_pressed(void) {
     display_menu(current_page);
 }
 
+void display_all_students() {
+    uint16_t num_of_students = GET_NUM_OF_STUDENTS(); 
+
+    LCD_clear();
+    if (num_of_students == 0) {
+        LCD_string("Total: 0"); 
+        _delay_ms(200);
+        return;
+    }
+
+    LCD_string("Total: ");
+    char buffer[6];
+    sprintf(buffer, "%u", num_of_students); 
+    LCD_string(buffer);
+    _delay_ms(50);
+
+    for (uint16_t i = 0; i < num_of_students; i++) {
+        unsigned long int studentID = READ_STU_ID_FROM_EEPROM(i);
+
+        LCD_clear();
+        LCD_string("Student ID:");
+        ltoa(studentID, buffer, 10); 
+        LCD_string(buffer);
+        _delay_ms(200);
+    }
+}
