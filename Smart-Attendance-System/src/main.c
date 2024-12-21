@@ -128,22 +128,6 @@ void Submit_Student_Code(){
     WRITE_STU_ID_IN_EEPROM(studentCode);
     _delay_ms(20);
 
-    // Verify the write
-    unsigned long int check_code = READ_STU_ID_FROM_EEPROM(GET_EEPROM_LAST_ADDRESS() - 4);
- if (check_code == studentCode) {
-        LCD_clear();
-        char test[9];  // Buffer to store the string representation of the number
-        ltoa(check_code, test, 10);  // Convert check_code to string in base 10
-        LCD_string("Stored Correctly:");
-        LCD_command(0xC0);  // Move to the next line on LCD
-        LCD_string(test);  // Display the student code
-        _delay_ms(2000);  // Delay to display the result
-    } else {
-        LCD_clear();
-        LCD_string("Write Error");
-        _delay_ms(2000);  // Delay to display the error message
-    }
-
 }
 bool check_stu_id(char *stuId) {
     if (strlen(stuId) != 8 || strncmp(stuId, "401", 3) != 0)
@@ -224,11 +208,14 @@ void Student_Management(void) {
             unsigned long int studentCode = get_student_id();
             if(handle_student_search(studentCode)){
                 LCD_command(0xC0);
-                LCD_string("Student Found!");
+                LCD_string("Student Present!");
+                _delay_ms(30);
+
             }
             else{
                 LCD_command(0xC0);
-                LCD_string("Student Not Found!");
+                LCD_string("Student Absent!");
+                 _delay_ms(30);
             }
 
         } else if (key_pressed == '2') {
@@ -245,30 +232,17 @@ void display_student_management_menu(void) {
     LCD_command(0xC0);
     LCD_string("2.Exit");
 }
-// Function to check if a student ID is present using an array
+
 bool handle_student_search(unsigned long int stuID) {
-    uint16_t last_address = GET_EEPROM_LAST_ADDRESS();  
-    uint16_t num_of_students = last_address / 4;  // تعداد دانشجویان ذخیره شده در EEPROM
-    unsigned long int *students = (unsigned long int *)malloc(num_of_students * sizeof(unsigned long int));
+    uint16_t num_of_students = GET_NUM_OF_STUDENTS();  // تعداد دانشجویان ذخیره شده
 
-    if (students == NULL) {
-        return false;
-    }
-
-    // خواندن شماره‌های دانشجویی
-    GET_ARRAY_OF_STUDENTS(students);
-
-    // جستجوی ID
-    bool found = false;
     for (uint16_t i = 0; i < num_of_students; i++) {
-        if (students[i] == stuID) {
-            found = true;
-            break;
+        unsigned long int student_id = READ_STU_ID_FROM_EEPROM(i);  // خواندن شماره دانشجویی
+        if (student_id == stuID) {
+            return true;  // اگر شماره دانشجویی یافت شد
         }
     }
-
-    free(students);  
-    return found;
+    return false;  // اگر شماره یافت نشد
 }
 
 void return_to_main_menu(void) {
