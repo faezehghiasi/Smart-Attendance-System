@@ -3,6 +3,7 @@
 #include <util/delay.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdio.h>
 #include "LCD.h"
@@ -35,6 +36,7 @@ void return_to_main_menu(void);
 bool handle_student_search(unsigned long int stuID);
 
 
+void display_all_students();
 
 
 
@@ -43,6 +45,7 @@ int main(void) {
     LCD_init();
     keypad_init();
     init_interrupt();
+    SET_NUM_OF_STUDENTS(0);
     sei();
 
 
@@ -251,9 +254,10 @@ void return_to_main_menu(void) {
 void invalid_key_pressed(void) {
     LCD_clear();
     LCD_string("Invalid Key!");
-    _delay_ms(1000);
+    _delay_ms(100);
     display_menu(current_page);
 }
+
 void display_view_present_students(){
     LCD_clear();
     LCD_string("1.View Present Students");
@@ -330,4 +334,5 @@ void Retrieve_Student_Data(){
         //USART_Transmit('\n');
     }
 }
+
 
