@@ -319,7 +319,7 @@ void display_students(){
 
 void Retrieve_Student_Data(){
 
-   // USART_init(MYUBRR); // Initialize USART with the correct baud rate
+    USART_init(MYUBRR); // Initialize USART with the correct baud rate
 
     char arr[7]="rania\r";
 
