@@ -7,12 +7,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+
 #define RS PD0
 #define EN PD3
 #define LCD_PORT PORTC
 #define LCD_DDR DDRC
 
-// Function declarations
 void LCD_init(void);
 void LCD_command(unsigned char cmd);
 void LCD_data(unsigned char data);
