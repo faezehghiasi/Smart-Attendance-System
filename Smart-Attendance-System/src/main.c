@@ -11,7 +11,7 @@
 #include "EEPROM.h"
 #include "temperature_monitoring.h"
 #include "USART.h"
-
+//**********************************************************************************************************
 void display_menu(int page);
 void Attendance_Ready_menu_page();
 void Submit_Student_Code();
@@ -30,8 +30,7 @@ void display_students();
 void View_Present_Students();
 void Attendance_Ready();
 void display_all_students();
-
-
+//**********************************************************************************************************
 int main(void) {
     LCD_init();
     keypad_init();
@@ -82,7 +81,7 @@ int main(void) {
 
     return 0;
 }
-
+//**********************************************************************************************************
 void display_menu(int page) {
     LCD_clear();
     if (page == 1) {
@@ -99,7 +98,7 @@ void display_menu(int page) {
         LCD_string("6. Traffic Monitoring");
     } 
 }
-
+//**********************************************************************************************************
 void display_Attendance_Ready_menu_page(){
     LCD_clear();
     LCD_string("1.Submit Student Code");
@@ -107,7 +106,7 @@ void display_Attendance_Ready_menu_page(){
     LCD_string("2.EXIT");
 
 }
-
+//**********************************************************************************************************
 void Submit_Student_Code() {
     unsigned long int studentCode = get_student_id();
     LCD_command(0xC0);
@@ -115,27 +114,27 @@ void Submit_Student_Code() {
     WRITE_STU_ID_IN_EEPROM(studentCode);
     _delay_ms(1000);
 }
-
+//**********************************************************************************************************
 bool check_stu_id(char *stuId) {
     if (strlen(stuId) != 8 || strncmp(stuId, "401", 3) != 0)
         return false;
     return true;
 }
-
+//**********************************************************************************************************
 void Wrong_format_of_stu_ID() {
     BUZZER();
     LCD_command(0xC0);
     LCD_string("wrong format !");
     _delay_ms(1000);
 }
-
+//**********************************************************************************************************
 void BUZZER() {
     DDRB |= (1 << 2);
     PORTB |= (1 << 2);
     _delay_ms(1000);
     PORTB &= ~(1 << 2);
 }
-
+//**********************************************************************************************************
 unsigned long int get_student_id(void) {
     char Student_Code[9] = {0}; 
     unsigned char i = 0;
@@ -179,7 +178,7 @@ unsigned long int get_student_id(void) {
         }
     }
 }
-
+//**********************************************************************************************************
 void Student_Management(void) {
     int current_page = 1;
     while (1) {
@@ -229,7 +228,7 @@ void Student_Management(void) {
         }
     }
 }
-
+//**********************************************************************************************************
 void display_student_management_menu_page(int page) {
     LCD_clear();
     switch (page) {
@@ -242,7 +241,7 @@ void display_student_management_menu_page(int page) {
             LCD_string("3.Exit");
     }
 }
-
+//**********************************************************************************************************
 bool handle_student_search(unsigned long int stuID) {
     uint16_t num_of_students = GET_NUM_OF_STUDENTS(); 
 
@@ -254,20 +253,20 @@ bool handle_student_search(unsigned long int stuID) {
     }
     return false;
 }
-
+//**********************************************************************************************************
 void return_to_main_menu(void) {
     LCD_clear();
     display_menu(current_page);
     key_pressed = 0;
 }
-
+//**********************************************************************************************************
 void invalid_key_pressed(void) {
     LCD_clear();
     LCD_string("Invalid Key!");
     _delay_ms(1000);
   
 }
-
+//**********************************************************************************************************
 void Attendance_Ready() {
     while (1) {
         LCD_clear();
@@ -295,13 +294,14 @@ void Attendance_Ready() {
         }
     }
 }
-
+//**********************************************************************************************************
 void View_Present_Students(){
     
     LCD_clear();
     display_students();
 
 }
+//**********************************************************************************************************
 void display_students(){
 
     uint16_t number_of_students=GET_NUM_OF_STUDENTS();
@@ -311,6 +311,7 @@ void display_students(){
     LCD_string(Number_of_stu);
     _delay_ms(1000);
 }
+//**********************************************************************************************************
 void Retrieve_Student_Data(){
 
     char arr[10];
@@ -323,4 +324,4 @@ void Retrieve_Student_Data(){
       
     }
 }
-
+//**********************************************************************************************************
