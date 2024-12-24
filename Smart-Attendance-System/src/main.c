@@ -23,7 +23,7 @@ void return_to_main_menu(void);
 bool handle_student_search(unsigned long int stuID);
 void display_student_management_menu_page(int page);
 void Student_Management(void);
-void display_all_students();
+
 
 int main(void) {
     LCD_init();
@@ -276,29 +276,4 @@ void invalid_key_pressed(void) {
     display_menu(current_page);
 }
 
-void display_all_students() {
-    uint16_t num_of_students = GET_NUM_OF_STUDENTS(); 
 
-    LCD_clear();
-    if (num_of_students == 0) {
-        LCD_string("Total: 0"); 
-        _delay_ms(200);
-        return;
-    }
-
-    LCD_string("Total: ");
-    char buffer[6];
-    sprintf(buffer, "%u", num_of_students); 
-    LCD_string(buffer);
-    _delay_ms(50);
-
-    for (uint16_t i = 0; i < num_of_students; i++) {
-        unsigned long int studentID = READ_STU_ID_FROM_EEPROM(i);
-
-        LCD_clear();
-        LCD_string("Student ID:");
-        ltoa(studentID, buffer, 10); 
-        LCD_string(buffer);
-        _delay_ms(200);
-    }
-}
