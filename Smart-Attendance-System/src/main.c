@@ -9,6 +9,7 @@
 #include "Keypad.h"
 #include "globals.h"
 #include "EEPROM.h"
+#include "temperature_monitoring.h"
 
 void display_menu(int page);
 void Attendance_Ready();
@@ -29,6 +30,7 @@ int main(void) {
     keypad_init();
     init_interrupt();
     SET_NUM_OF_STUDENTS(0); // Initialize the number of students in EEPROM
+    ADC_init();
     sei();
 
     while (1) {
@@ -62,7 +64,8 @@ int main(void) {
                 display_all_students();
                 return_to_main_menu();
             } else if (key_pressed == '4') {
-                LCD_string("Temp Monitoring");
+                display_temperature();
+                return_to_main_menu();
             } else if (key_pressed == '5') {
                 LCD_string("Retrieve Data");
             } else if (key_pressed == '6') {
