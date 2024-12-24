@@ -5,26 +5,15 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdio.h>
 #include "LCD.h"
-#include "USART.h"
 #include "Keypad.h"
 #include "globals.h"
 #include "EEPROM.h"
 #include "temperature_monitoring.h"
-
+#include "USART.h"
 
 void display_menu(int page);
-void display_Attendance_Ready();
-void display_student_management_menu(void);
-void display_view_present_students();
-
-void Attendance_Ready();
-void Student_Management(void);
-void View_Present_Students();
-void Retrieve_Student_Data();
-
-void display_students();
+void Attendance_Ready_menu_page();
 void Submit_Student_Code();
 void BUZZER();
 bool check_stu_id(char * stuId);
@@ -35,6 +24,12 @@ void return_to_main_menu(void);
 bool handle_student_search(unsigned long int stuID);
 void display_student_management_menu_page(int page);
 void Student_Management(void);
+void display_all_students();
+void Retrieve_Student_Data();
+void display_students();
+void View_Present_Students();
+void Attendance_Ready();
+void display_all_students();
 
 
 int main(void) {
@@ -55,31 +50,16 @@ int main(void) {
         if (key_pressed) {
             LCD_clear();
             if (key_pressed == '1') {
-                while (1) {
-                    LCD_clear();
-                    Attendance_Ready();
-                    key_pressed = 0;
-                    while (key_pressed == 0);
-                    if (key_pressed == '1') {
-                        LCD_clear();
-                        Submit_Student_Code();
-                    } else if (key_pressed == '2') {
-                        return_to_main_menu();
-                        break;
-                    } else {
-                        invalid_key_pressed();
-                    }
-                }
+               Attendance_Ready();
             } else if (key_pressed == '2') {
                 Student_Management();
             } else if (key_pressed == '3') {
-                display_all_students();
-                return_to_main_menu();
+                 View_Present_Students();   
             } else if (key_pressed == '4') {
                 display_temperature();
                 return_to_main_menu();
             } else if (key_pressed == '5') {
-                LCD_string("Retrieve Data");
+                  Retrieve_Student_Data(); 
             } else if (key_pressed == '6') {
                 LCD_string("Traffic Monitor");
             } else if (key_pressed == '#') {
@@ -121,13 +101,12 @@ void display_menu(int page) {
     }
 }
 
-
-
-void display_Attendance_Ready(){
+void display_Attendance_Ready_menu_page(){
     LCD_clear();
     LCD_string("1.Submit Student Code");
     LCD_command(0xC0);
     LCD_string("2.EXIT");
+
 }
 
 void Submit_Student_Code() {
@@ -224,7 +203,6 @@ void Student_Management(void) {
             }
         } else if (key_pressed == '2' && current_page == 1) {
             unsigned long int studentCode = get_student_id();
-            
             if (delete_student_from_eeprom(studentCode)) {
                 LCD_command(0xC0);
                 LCD_string("Student Deleted!");
@@ -291,56 +269,40 @@ void invalid_key_pressed(void) {
     display_menu(current_page);
 }
 
-void display_view_present_students(){
-    LCD_clear();
-    LCD_string("1.View Present Students");
-    LCD_command(0xC0);
-    LCD_string("2.Exit");
-}
-void Attendance_Ready(){
- while(1){
+void Attendance_Ready() {
+    while (1) {
+        LCD_clear();
+        display_Attendance_Ready_menu_page();
+        
+        // Reset key press state
+        key_pressed = 0;
 
-                    LCD_clear();
-                    display_Attendance_Ready();
-                    key_pressed=0;
-                    while(key_pressed==0);
-                    if (key_pressed == '1'){
-                        LCD_clear();
-                        Submit_Student_Code();
-                        
-                    }
-                    else if(key_pressed =='2'){
-                        return_to_main_menu();
-                        break;
-                    }
-                    else {
-                        invalid_key_pressed();
-                    }
-                }
+        // Wait for a key press
+        while (key_pressed == 0);
+
+        switch (key_pressed) {
+            case '1':
+                LCD_clear();
+                Submit_Student_Code();
+                break;
+
+            case '2':
+                return_to_main_menu();
+                return; // Exit the function
+
+            default:
+                invalid_key_pressed();
+                break;
+        }
+    }
 }
 
 void View_Present_Students(){
-    while(1){
-
-                    LCD_clear();
-                    display_view_present_students();
-                    key_pressed=0;
-                    while(key_pressed==0);
-                    if (key_pressed == '1'){
-                        LCD_clear();
-                        display_students();                        
-                    }
-                    else if(key_pressed =='2'){
-                        return_to_main_menu();
-                        break;
-                    }
-                    else {
-                        invalid_key_pressed();
-                    }
-                }
+    
+    LCD_clear();
+    display_students();
 
 }
-
 void display_students(){
 
     uint16_t number_of_students=GET_NUM_OF_STUDENTS();
@@ -348,12 +310,10 @@ void display_students(){
     sprintf(Number_of_stu, "%d", number_of_students);
     LCD_string("Number of present students: ");
     LCD_string(Number_of_stu);
-    _delay_ms(5);
-
-
+    _delay_ms(50);
+    display_all_students();
 
 }
-
 void Retrieve_Student_Data(){
 
     USART_init(MYUBRR); // Initialize USART with the correct baud rate
@@ -368,4 +328,29 @@ void Retrieve_Student_Data(){
     }
 }
 
+void display_all_students() {
+    uint16_t num_of_students = GET_NUM_OF_STUDENTS(); // Get the number of stored students
 
+    LCD_clear();
+    if (num_of_students == 0) {
+        LCD_string("Total: 0"); // Display zero
+        _delay_ms(200);
+        return;
+    }
+
+    LCD_string("Total: ");
+    char buffer[6];
+    sprintf(buffer, "%u", num_of_students); // Convert number to string
+    LCD_string(buffer);
+    _delay_ms(50);
+
+    for (uint16_t i = 0; i < num_of_students; i++) {
+        unsigned long int studentID = READ_STU_ID_FROM_EEPROM(i);
+
+        LCD_clear();
+        LCD_string("Student ID:");
+        ltoa(studentID, buffer, 10); // Convert student ID to string
+        LCD_string(buffer);
+        _delay_ms(200);
+    }
+}
