@@ -11,6 +11,7 @@
 #include "EEPROM.h"
 #include "temperature_monitoring.h"
 #include "USART.h"
+#include "time_limiter.h"
 //**********************************************************************************************************
 void display_menu(int page);
 void Attendance_Ready_menu_page();
@@ -24,12 +25,11 @@ void return_to_main_menu(void);
 bool handle_student_search(unsigned long int stuID);
 void display_student_management_menu_page(int page);
 void Student_Management(void);
-void display_all_students();
 void Retrieve_Student_Data();
 void display_students();
 void View_Present_Students();
 void Attendance_Ready();
-void display_all_students();
+uint32_t get_attendance_time();
 //**********************************************************************************************************
 int main(void) {
     LCD_init();
@@ -110,7 +110,7 @@ void display_Attendance_Ready_menu_page(){
 void Submit_Student_Code() {
     unsigned long int studentCode = get_student_id();
 
-    if (!handle_student_search(studentCode)) {
+    if ( handle_student_search(studentCode)) {
         LCD_clear();
         LCD_string("Attendance already recorded.");
         _delay_ms(1000);
@@ -206,7 +206,7 @@ void Student_Management(void) {
             } else {
                 LCD_command(0xC0);
                 LCD_string("Student Absent!");
-                _delay_ms(200);
+                _delay_ms(1000);
             }
         } else if (key_pressed == '2' && current_page == 1) {
             unsigned long int studentCode = get_student_id();
@@ -279,14 +279,26 @@ void invalid_key_pressed(void) {
 void Attendance_Ready() {
     while (1) {
         LCD_clear();
+        uint32_t attendance_time = get_attendance_time();
+        init_timer(attendance_time);
+        
         display_Attendance_Ready_menu_page();
         
         // Reset key press state
         key_pressed = 0;
+        // Wait for a key press or timer expiry
+        while (key_pressed == 0 && !is_time_up());
 
-        // Wait for a key press
-        while (key_pressed == 0);
+        // If time is up, exit the loop
+        if (is_time_up()) {
+            LCD_clear();
+            LCD_string("Time's up!");
+            _delay_ms(2000);
+            return_to_main_menu();
+            return;
+        }
 
+        // Handle key press actions
         switch (key_pressed) {
             case '1':
                 LCD_clear();
@@ -294,6 +306,7 @@ void Attendance_Ready() {
                 break;
 
             case '2':
+                TCCR0 = 0; 
                 return_to_main_menu();
                 return; // Exit the function
 
@@ -331,6 +344,66 @@ void Retrieve_Student_Data(){
         USART_Transmit_string(arr) ;// Send character 'A' every 500 ms
          _delay_ms(1000);     
       
+    }
+}
+//**********************************************************************************************************
+uint32_t get_attendance_time() {
+    
+    char Time_Input[4] = {0}; // Format: MMSS
+    unsigned char i = 0;
+
+    LCD_clear();
+    LCD_string("Enter Time attendance (MMSS):");
+
+    while (1) {
+        key_pressed = 0;
+
+        while (key_pressed == 0);
+
+        // Handle '#' as the end of input
+        if (key_pressed == '#') {
+            if (i == 4) { // Ensure the input is 4 digits long
+                LCD_clear();
+                LCD_string("time recorded!");
+                 _delay_ms(2000);
+                // Convert MMSS format to total seconds
+                uint32_t minutes = (Time_Input[0] - '0') * 10 + (Time_Input[1] - '0');
+                uint32_t seconds = (Time_Input[2] - '0') * 10 + (Time_Input[3] - '0');
+
+                // Set the timer with total seconds
+                init_timer((minutes * 60 * 1000) + (seconds * 1000)); // Convert to milliseconds for the timer
+                return (minutes * 60 + seconds); // Return total time in seconds
+            } else { // Invalid length
+                LCD_clear();
+                LCD_string("Invalid Time!");
+                _delay_ms(2000);
+                memset(Time_Input, 0, sizeof(Time_Input)); // Reset input buffer
+                i = 0; // Reset index
+                LCD_clear();
+                LCD_string("Enter Time attendance (MMSS): ");
+            }
+        } else if (key_pressed >= '0' && key_pressed <= '9') {
+            if (i < 4) { // Accept up to 4 digits
+                Time_Input[i++] = key_pressed;
+                LCD_data(key_pressed); // Display the input digit on LCD
+            } else { // If user enters more than 4 digits
+                LCD_clear();
+                LCD_string("Invalid Time!");
+                _delay_ms(2000);
+                memset(Time_Input, 0, sizeof(Time_Input)); // Reset input buffer
+                i = 0; // Reset index
+                LCD_clear();
+                LCD_string("Enter Time attendance (MMSS): ");
+            }
+        } else { // Handle invalid characters
+            LCD_clear();
+            LCD_string("Invalid Char!");
+            _delay_ms(2000);
+            memset(Time_Input, 0, sizeof(Time_Input)); // Reset input buffer
+            i = 0; // Reset index
+            LCD_clear();
+            LCD_string("Enter Time attendance (MMSS): ");
+        }
     }
 }
 //**********************************************************************************************************

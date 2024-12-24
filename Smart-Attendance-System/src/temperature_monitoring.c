@@ -1,5 +1,5 @@
 #include "temperature_monitoring.h"
-#include "lcd.h"  // Include the LCD library for displaying temperature
+#include "lcd.h" 
 #include <stdio.h>
 #include "globals.h"
 
