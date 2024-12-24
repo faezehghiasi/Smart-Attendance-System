@@ -5,13 +5,27 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdio.h>
 #include "LCD.h"
 #include"Keypad.h"
 #include"globals.h"
 #include "EEROM.h"
+#include "USART.h"
+
+
+
 
 void display_menu(int page);
+void display_Attendance_Ready();
+void display_student_management_menu(void);
+void display_view_present_students();
+
 void Attendance_Ready();
+void Student_Management(void);
+void View_Present_Students();
+void Retrieve_Student_Data();
+
+void display_students();
 void Submit_Student_Code();
 void BUZZER();
 bool check_stu_id(char * stuId);
@@ -20,18 +34,20 @@ unsigned long int get_student_id(void);
 void invalid_key_pressed(void);
 void return_to_main_menu(void);
 bool handle_student_search(unsigned long int stuID);
-void display_student_management_menu(void);
-void Student_Management(void);
+
+
 void display_all_students();
 
 
 
 int main(void) {
+    PORTD&=~(1<<1);
     LCD_init();
     keypad_init();
     init_interrupt();
     SET_NUM_OF_STUDENTS(0);
     sei();
+
 
     while (1) {
         if (menu_needs_update) {
@@ -43,34 +59,16 @@ int main(void) {
         if (key_pressed) {
             LCD_clear();
             if (key_pressed == '1') {
-                while(1){
-
-                    LCD_clear();
-                    Attendance_Ready();
-                    key_pressed=0;
-                    while(key_pressed==0);
-                    if (key_pressed == '1'){
-                        LCD_clear();
-                        Submit_Student_Code();
-                        
-                    }
-                    else if(key_pressed =='2'){
-                        return_to_main_menu();
-                        break;
-                    }
-                    else {
-                        invalid_key_pressed();
-                    }
-                }
+                Attendance_Ready();
                 
             } else if (key_pressed == '2') {
                 Student_Management();
             } else if (key_pressed == '3') {
-              
+                View_Present_Students();       
             } else if (key_pressed == '4') {
                 LCD_string("Temp Monitoring");
             } else if (key_pressed == '5') {
-                LCD_string("Retrieve Data");
+                Retrieve_Student_Data(); 
             } else if (key_pressed == '6') {
                 LCD_string("Traffic Monitor");
             } else if (key_pressed == '#') {
@@ -117,7 +115,7 @@ void display_menu(int page) {
 
 
 
-void Attendance_Ready(){
+void display_Attendance_Ready(){
     LCD_clear();
     LCD_string("1.Submit Student Code");
     LCD_command(0xC0);
@@ -259,4 +257,82 @@ void invalid_key_pressed(void) {
     _delay_ms(100);
     display_menu(current_page);
 }
+
+void display_view_present_students(){
+    LCD_clear();
+    LCD_string("1.View Present Students");
+    LCD_command(0xC0);
+    LCD_string("2.Exit");
+}
+void Attendance_Ready(){
+ while(1){
+
+                    LCD_clear();
+                    display_Attendance_Ready();
+                    key_pressed=0;
+                    while(key_pressed==0);
+                    if (key_pressed == '1'){
+                        LCD_clear();
+                        Submit_Student_Code();
+                        
+                    }
+                    else if(key_pressed =='2'){
+                        return_to_main_menu();
+                        break;
+                    }
+                    else {
+                        invalid_key_pressed();
+                    }
+                }
+}
+
+void View_Present_Students(){
+    while(1){
+
+                    LCD_clear();
+                    display_view_present_students();
+                    key_pressed=0;
+                    while(key_pressed==0);
+                    if (key_pressed == '1'){
+                        LCD_clear();
+                        display_students();                        
+                    }
+                    else if(key_pressed =='2'){
+                        return_to_main_menu();
+                        break;
+                    }
+                    else {
+                        invalid_key_pressed();
+                    }
+                }
+
+}
+
+void display_students(){
+
+    uint16_t number_of_students=GET_NUM_OF_STUDENTS();
+    char Number_of_stu[16];
+    sprintf(Number_of_stu, "%d", number_of_students);
+    LCD_string("Number of present students: ");
+    LCD_string(Number_of_stu);
+    _delay_ms(5);
+
+
+
+}
+
+void Retrieve_Student_Data(){
+
+    USART_init(MYUBRR); // Initialize USART with the correct baud rate
+
+    char arr[7]="rania\r";
+
+    while (1) {       
+             
+        _delay_ms(500);       
+        USART_Transmit_string(arr) ;// Send character 'A' every 500 ms
+        //USART_Transmit('\n');
+    }
+}
+
 
