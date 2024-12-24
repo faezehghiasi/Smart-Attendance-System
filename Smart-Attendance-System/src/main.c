@@ -38,6 +38,7 @@ int main(void) {
     init_interrupt();
     SET_NUM_OF_STUDENTS(0); // Initialize the number of students in EEPROM
     ADC_init();
+    USART_init(MYUBRR);
     sei();
 
     while (1) {
@@ -316,15 +317,14 @@ void display_students(){
 }
 void Retrieve_Student_Data(){
 
-    USART_init(MYUBRR); // Initialize USART with the correct baud rate
-
-    char arr[7]="rania\r";
+    char arr[10];
+    strcpy(arr,"rania\r\n");
 
     while (1) {       
              
-        _delay_ms(500);       
         USART_Transmit_string(arr) ;// Send character 'A' every 500 ms
-        //USART_Transmit('\n');
+         _delay_ms(100);     
+      
     }
 }
 
