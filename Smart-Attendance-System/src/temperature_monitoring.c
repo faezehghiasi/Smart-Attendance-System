@@ -1,47 +1,79 @@
 #include "temperature_monitoring.h"
+#include "lcd.h"  // Include the LCD library for displaying temperature
+#include <stdio.h>
+#include "globals.h"
 
-// Initialize ADC
+#define V_REF 5.0  // Reference voltage for ADC
+#define ADC_RESOLUTION 1024.0
+#define TEMPERATURE_FACTOR 10.0  // LM35 outputs 10mV/°C
+
+// Initialize the ADC
 void ADC_init(void) {
-    ADMUX = (1 << REFS0); // Set AVCC as reference (5V)
-    ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1); // Enable ADC, prescaler = 64
+    // Configure ADC: AVCC as reference, right adjust result
+    ADMUX = (1 << REFS0); // Reference voltage AVCC
+    ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1); // Enable ADC and set prescaler to 64
 }
 
+// Read ADC value from a specific channel
 uint16_t ADC_read(uint8_t channel) {
-    ADMUX = (ADMUX & 0xF8) | (channel & 0x07); // Select ADC channel
-    ADCSRA |= (1 << ADSC);                    // Start conversion
-    while (ADCSRA & (1 << ADSC));             // Wait for conversion to complete
-    return ADC;                               // Return ADC value
+    // Select ADC channel (0 to 7)
+    ADMUX = (ADMUX & 0xF8) | (channel & 0x07);
+    
+    // Start conversion
+    ADCSRA |= (1 << ADSC);
+    
+    // Wait for conversion to complete
+    while (ADCSRA & (1 << ADSC));
+    
+    // Return ADC result
+    return ADC;
 }
 
-// Convert ADC value to temperature in Celsius
+// Get temperature in °C from the LM35 sensor
 float get_temperature(void) {
-    uint16_t adc_value = ADC_read(7); // Assuming channel 7 (PA7) is connected to the LM35 sensor
-    float voltage = (adc_value * 5.0) / 1024.0; // Convert ADC value to voltage (for 5V reference)
-    return voltage / 0.01; // Convert voltage to temperature (LM35: 10mV/°C)
+    uint16_t adc_value = ADC_read(7); // Read from channel 7 (PORTA.7)
+    float voltage = (adc_value * V_REF) / ADC_RESOLUTION; // Convert ADC value to voltage
+    return voltage * TEMPERATURE_FACTOR; // Convert voltage to temperature
 }
 
-// Display temperature on LCD
-void display_temperature(void) {
-    char temp_str[16];
+// Display temperature on the LCD
+void display_temperature_on_LCD(void) {
+    float previous_temperature = -1000.0; // Initialize with an invalid temperature
 
     while (1) {
-        float temperature = get_temperature(); // Get temperature value
+        // Get the current temperature
+        float temperature = get_temperature();
 
-        // Format temperature to string with 1 decimal point
-        dtostrf(temperature, 5, 1, temp_str);
+        // Check if the temperature has changed
+        if ((int)(temperature * 100) != (int)(previous_temperature * 100)) {
+            // Update the previous temperature
+            previous_temperature = temperature;
 
-        // Display temperature on LCD
-        LCD_clear();
-        LCD_string("Temperature: ");
-        LCD_string(temp_str);
-        LCD_string(" C");
+            // Format temperature as integer and fractional parts
+            int temp_int = (int)temperature;         // Integer part of temperature
+            int temp_frac = (int)((temperature - temp_int) * 100); // Fractional part (two digits)
 
-        _delay_ms(1000); // Update every second
+            // Buffer to hold the formatted string
+            char buffer[16];
+            snprintf(buffer, sizeof(buffer), "Temp: %d.%02d C", temp_int, temp_frac);
 
-        // Exit if '*' is pressed
-        if (key_pressed == '*') {
+            // Display temperature on LCD
             LCD_clear();
+            LCD_string(buffer);
+
+            // Move to the next line and display exit prompt
+            LCD_command(0xC0); // Move cursor to the second line
+            LCD_string("Press * to exit");
+            _delay_ms(300);
+        }
+
+        // Check for key press to exit
+        if (key_pressed == '*') {
             break;
         }
+
+        // Add a delay for smooth updates
+       
     }
 }
+

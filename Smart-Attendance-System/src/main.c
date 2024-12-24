@@ -58,7 +58,7 @@ int main(void) {
                  View_Present_Students();
                  return_to_main_menu();   
             } else if (key_pressed == '4') {
-                display_temperature();
+                display_temperature_on_LCD();
                 return_to_main_menu();
             } else if (key_pressed == '5') {
                   Retrieve_Student_Data(); 
@@ -109,6 +109,10 @@ void display_Attendance_Ready_menu_page(){
 //**********************************************************************************************************
 void Submit_Student_Code() {
     unsigned long int studentCode = get_student_id();
+    if(!handle_student_search(studentCode)){
+        LCD_clear();
+
+    }
     LCD_command(0xC0);
     LCD_string("Code submitted");
     WRITE_STU_ID_IN_EEPROM(studentCode);
