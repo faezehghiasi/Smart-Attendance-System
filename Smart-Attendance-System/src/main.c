@@ -39,6 +39,7 @@ int main(void) {
     SET_NUM_OF_STUDENTS(0); // Initialize the number of students in EEPROM
     ADC_init();
     USART_init(MYUBRR);
+
     sei();
 
     while (1) {
@@ -55,7 +56,8 @@ int main(void) {
             } else if (key_pressed == '2') {
                 Student_Management();
             } else if (key_pressed == '3') {
-                 View_Present_Students();   
+                 View_Present_Students();
+                 return_to_main_menu();   
             } else if (key_pressed == '4') {
                 display_temperature();
                 return_to_main_menu();
@@ -72,7 +74,7 @@ int main(void) {
                 if (current_page < 1) current_page = 3;
                 menu_needs_update = 1;
             } else {
-                LCD_string("Invalid Key");
+                invalid_key_pressed();
             }
             key_pressed = 0;
         }
@@ -95,11 +97,7 @@ void display_menu(int page) {
         LCD_string("5. Retrieve Student Data");
         LCD_command(0xC0);
         LCD_string("6. Traffic Monitoring");
-    } else {
-        LCD_clear();
-        LCD_string("Invalid Page");
-        _delay_ms(2000);
-    }
+    } 
 }
 
 void display_Attendance_Ready_menu_page(){
@@ -115,7 +113,7 @@ void Submit_Student_Code() {
     LCD_command(0xC0);
     LCD_string("Code submitted");
     WRITE_STU_ID_IN_EEPROM(studentCode);
-    _delay_ms(20);
+    _delay_ms(1000);
 }
 
 bool check_stu_id(char *stuId) {
@@ -127,14 +125,14 @@ bool check_stu_id(char *stuId) {
 void Wrong_format_of_stu_ID() {
     BUZZER();
     LCD_command(0xC0);
-    LCD_string("Your Student Code format is wrong");
-    _delay_ms(20);
+    LCD_string("wrong format !");
+    _delay_ms(1000);
 }
 
 void BUZZER() {
     DDRB |= (1 << 2);
     PORTB |= (1 << 2);
-    _delay_ms(50);
+    _delay_ms(1000);
     PORTB &= ~(1 << 2);
 }
 
@@ -196,7 +194,7 @@ void Student_Management(void) {
             if (handle_student_search(studentCode)) {
                 LCD_command(0xC0);
                 LCD_string("Student Present!");
-                _delay_ms(200);
+                _delay_ms(1000);
             } else {
                 LCD_command(0xC0);
                 LCD_string("Student Absent!");
@@ -207,11 +205,11 @@ void Student_Management(void) {
             if (delete_student_from_eeprom(studentCode)) {
                 LCD_command(0xC0);
                 LCD_string("Student Deleted!");
-                _delay_ms(200);
+                _delay_ms(1000);
             } else {
                 LCD_command(0xC0);
                 LCD_string("Not Found!");
-                _delay_ms(200);
+                _delay_ms(1000);
             }
         } else if (key_pressed == '3' && current_page == 2) {
             return_to_main_menu();
@@ -266,8 +264,8 @@ void return_to_main_menu(void) {
 void invalid_key_pressed(void) {
     LCD_clear();
     LCD_string("Invalid Key!");
-    _delay_ms(100);
-    display_menu(current_page);
+    _delay_ms(1000);
+  
 }
 
 void Attendance_Ready() {
@@ -311,9 +309,7 @@ void display_students(){
     sprintf(Number_of_stu, "%d", number_of_students);
     LCD_string("Number of present students: ");
     LCD_string(Number_of_stu);
-    _delay_ms(50);
-    display_all_students();
-
+    _delay_ms(1000);
 }
 void Retrieve_Student_Data(){
 
@@ -323,34 +319,8 @@ void Retrieve_Student_Data(){
     while (1) {       
              
         USART_Transmit_string(arr) ;// Send character 'A' every 500 ms
-         _delay_ms(100);     
+         _delay_ms(1000);     
       
     }
 }
 
-void display_all_students() {
-    uint16_t num_of_students = GET_NUM_OF_STUDENTS(); // Get the number of stored students
-
-    LCD_clear();
-    if (num_of_students == 0) {
-        LCD_string("Total: 0"); // Display zero
-        _delay_ms(200);
-        return;
-    }
-
-    LCD_string("Total: ");
-    char buffer[6];
-    sprintf(buffer, "%u", num_of_students); // Convert number to string
-    LCD_string(buffer);
-    _delay_ms(50);
-
-    for (uint16_t i = 0; i < num_of_students; i++) {
-        unsigned long int studentID = READ_STU_ID_FROM_EEPROM(i);
-
-        LCD_clear();
-        LCD_string("Student ID:");
-        ltoa(studentID, buffer, 10); // Convert student ID to string
-        LCD_string(buffer);
-        _delay_ms(200);
-    }
-}
