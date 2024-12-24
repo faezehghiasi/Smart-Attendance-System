@@ -109,15 +109,20 @@ void display_Attendance_Ready_menu_page(){
 //**********************************************************************************************************
 void Submit_Student_Code() {
     unsigned long int studentCode = get_student_id();
-    if(!handle_student_search(studentCode)){
-        LCD_clear();
 
+    if (!handle_student_search(studentCode)) {
+        LCD_clear();
+        LCD_string("Attendance already recorded.");
+        _delay_ms(1000);
+        return;
     }
-    LCD_command(0xC0);
+
+    LCD_clear();
     LCD_string("Code submitted");
     WRITE_STU_ID_IN_EEPROM(studentCode);
     _delay_ms(1000);
 }
+
 //**********************************************************************************************************
 bool check_stu_id(char *stuId) {
     if (strlen(stuId) != 8 || strncmp(stuId, "401", 3) != 0)
