@@ -61,7 +61,9 @@ int main(void) {
                 display_temperature_on_LCD();
                 return_to_main_menu();
             } else if (key_pressed == '5') {
-                  Retrieve_Student_Data(); 
+                Retrieve_Student_Data(); 
+                return_to_main_menu();
+
             } else if (key_pressed == '6') {
                 LCD_string("Traffic Monitor");
             } else if (key_pressed == '#') {
@@ -277,10 +279,14 @@ void invalid_key_pressed(void) {
 }
 //**********************************************************************************************************
 void Attendance_Ready() {
+    bool time_set = false;
     while (1) {
-        LCD_clear();
-        uint32_t attendance_time = get_attendance_time();
-        init_timer(attendance_time);
+        if(!time_set){
+            LCD_clear();
+            uint32_t attendance_time = get_attendance_time();
+            init_timer(attendance_time);
+            time_set = true;
+        }
         
         display_Attendance_Ready_menu_page();
         
@@ -327,24 +333,60 @@ void View_Present_Students(){
 void display_students(){
 
     uint16_t number_of_students=GET_NUM_OF_STUDENTS();
-    char Number_of_stu[16];
-    sprintf(Number_of_stu, "%d", number_of_students);
+    char arr[16];
+    sprintf(arr, "%d", number_of_students);
     LCD_string("Number of present students: ");
-    LCD_string(Number_of_stu);
+    LCD_string(arr);
     _delay_ms(1000);
+    LCD_clear();
+    if(number_of_students!=0){
+        for (uint16_t i = 0; i < number_of_students; i++) {
+                unsigned long int student_id = READ_STU_ID_FROM_EEPROM(i); 
+                sprintf(arr,"%ld",student_id);
+                LCD_string(arr);
+                _delay_ms(500);
+                LCD_clear();
+            }
+            LCD_string("Completion of students");
+            _delay_ms(500);
+            }
+
+    else{
+        LCD_string("No student has submitted yet");
+        _delay_ms(500);
+    }
+    
+
 }
 //**********************************************************************************************************
 void Retrieve_Student_Data(){
 
-    char arr[10];
-    strcpy(arr,"rania\r\n");
-
-    while (1) {       
-             
-        USART_Transmit_string(arr) ;// Send character 'A' every 500 ms
-         _delay_ms(1000);     
-      
+    int number_of_students=GET_NUM_OF_STUDENTS();
+    if(number_of_students==0){
+        LCD_string("No student has submitted yet");
+        _delay_ms(500);
+        return;
     }
+    else{
+        LCD_string("Retrieve students data");
+
+        char arr[9];
+        
+
+        for (uint16_t i = 0; i < number_of_students; i++) {
+            unsigned long int student_id = READ_STU_ID_FROM_EEPROM(i); 
+            sprintf(arr,"%ld",student_id);
+            USART_Transmit_string(arr);
+            USART_Transmit_Data('\r');
+            _delay_ms(500);
+        }
+        USART_Transmit_string("-----------------\r");
+        _delay_ms(500);
+    }
+
+
+
+    
 }
 //**********************************************************************************************************
 uint32_t get_attendance_time() {
@@ -365,7 +407,7 @@ uint32_t get_attendance_time() {
             if (i == 4) { // Ensure the input is 4 digits long
                 LCD_clear();
                 LCD_string("time recorded!");
-                 _delay_ms(2000);
+                 _delay_ms(500);
                 // Convert MMSS format to total seconds
                 uint32_t minutes = (Time_Input[0] - '0') * 10 + (Time_Input[1] - '0');
                 uint32_t seconds = (Time_Input[2] - '0') * 10 + (Time_Input[3] - '0');

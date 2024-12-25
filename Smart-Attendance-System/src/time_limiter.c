@@ -7,6 +7,8 @@ static uint32_t time_limit = 0; // Time limit in milliseconds
 // Initialize Timer0 for 1 ms ticks
 void init_timer(uint32_t time_limit_sec) {
     time_limit = time_limit_sec * 1000; // Convert time limit to milliseconds
+    elapsed_time = 0;
+    time_up = false;
     TCCR0 = (1 << WGM01);        // CTC mode
     OCR0 = 250;                  // Compare match value for 1 ms (assuming 16 MHz clock, prescaler = 64)
     TIMSK |= (1 << OCIE0);       // Enable Timer0 compare match interrupt
