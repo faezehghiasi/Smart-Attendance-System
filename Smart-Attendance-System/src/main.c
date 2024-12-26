@@ -12,6 +12,7 @@
 #include "temperature_monitoring.h"
 #include "USART.h"
 #include "time_limiter.h"
+#include"ULTRASONIC.h"
 //**********************************************************************************************************
 void display_menu(int page);
 void Attendance_Ready_menu_page();
@@ -29,6 +30,7 @@ void Retrieve_Student_Data();
 void display_students();
 void View_Present_Students();
 void Attendance_Ready();
+void Traffic_Monitoring();
 uint32_t get_attendance_time();
 //**********************************************************************************************************
 int main(void) {
@@ -65,7 +67,11 @@ int main(void) {
                 return_to_main_menu();
 
             } else if (key_pressed == '6') {
-                LCD_string("Traffic Monitor");
+                key_pressed==0;
+                LCD_string("Press '#' to exit");
+                LCD_clear();
+                Traffic_Monitoring();
+                return_to_main_menu();
             } else if (key_pressed == '#') {
                 current_page++;
                 if (current_page > 3) current_page = 1;
@@ -449,3 +455,59 @@ uint32_t get_attendance_time() {
     }
 }
 //**********************************************************************************************************
+
+void Traffic_Monitoring(){
+     char numberString[16];  // Buffer to hold distance string
+    uint16_t pulseWidth;    // Pulse width from echo
+    int distance;           // Calculated distance
+    int previous_count = -1;
+
+    HCSR04Init();           // Initialize ultrasonic sensor
+
+    while (1) {
+        if(key_pressed=='#'){
+            break;
+        }
+        _delay_ms(100);  // Delay for sensor stability
+
+        HCSR04Trigger();              // Send trigger pulse
+        pulseWidth = GetPulseWidth();  // Measure echo pulse
+
+        if (pulseWidth == US_ERROR) {
+            LCD_clear();
+            LCD_string("Error");        // Display error message
+        } else if (pulseWidth == US_NO_OBSTACLE) {
+            LCD_clear();
+            LCD_string("No Obstacle");  // Display no obstacle message
+        } else {
+            distance = (int)((pulseWidth * 0.034 / 2) + 0.5);
+
+            // Display distance on LCD
+            sprintf(numberString, "%d", distance); // Convert distance to string
+            LCD_clear();
+            LCD_string("Distance: ");
+            LCD_string(numberString); 
+            LCD_string(" cm");
+
+            // Counting logic based on distance
+            if (distance < 6) {
+                count++;  // Increment count if distance is below threshold
+            }
+
+            // Update count on LCD only if it changes
+            if (count != previous_count) {
+                previous_count = count;
+                sprintf(numberString, "%d", count);
+                LCD_command(0xC0);
+                LCD_string("Count: ");
+                LCD_string(numberString);
+                _delay_ms(500);
+            }
+            else{
+                _delay_ms(500);
+
+            }
+        }
+    }
+
+}
