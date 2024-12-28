@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "string.h": "c",
+        "lcd.h": "c",
+        "time_limiter.h": "c"
+    }
+}

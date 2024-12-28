@@ -1,48 +1,46 @@
 #include "temperature_monitoring.h"
-#include "lcd.h" 
 #include <stdio.h>
-#include "globals.h"
 
-#define V_REF 5.0  // Reference voltage for ADC
-#define ADC_RESOLUTION 1024.0
-#define TEMPERATURE_FACTOR 10.0  // LM35 outputs 10mV/°C
 
-// Initialize the ADC
+
 void ADC_init(void) {
-    // Configure ADC: AVCC as reference, right adjust result
-    ADMUX = (1 << REFS0); // Reference voltage AVCC
-    ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1); // Enable ADC and set prescaler to 64
+    DDRA &= ~(1 << PA7); // تنظیم PA7 به‌عنوان ورودی
+    ADCSRA = 0x87; // فعال‌سازی ADC و تنظیم prescaler به 128
+    ADMUX = (1 << REFS1) | (1 << REFS0);  // انتخاب ولتاژ مرجع 2.56V و راست‌تراز کردن داده‌ها
 }
 
-// Read ADC value from a specific channel
 uint16_t ADC_read(uint8_t channel) {
-    // Select ADC channel (0 to 7)
-    ADMUX = (ADMUX & 0xF8) | (channel & 0x07);
-    
-    // Start conversion
+    // انتخاب کانال (پاک‌کردن بیت‌های قدیمی و تنظیم کانال جدید)
+    ADMUX = (ADMUX & 0xF0) | (channel & 0x0F);
+
+    // شروع تبدیل
     ADCSRA |= (1 << ADSC);
-    
-    // Wait for conversion to complete
-    while (ADCSRA & (1 << ADSC));
-    
-    // Return ADC result
-    return ADC;
+
+    // انتظار برای پایان تبدیل
+    while (!(ADCSRA & (1 << ADIF)));
+
+    // پاک کردن پرچم ADIF
+    ADCSRA |= (1 << ADIF);
+
+    // خواندن مقدار ADC
+    uint16_t result = ADCL;
+    result |= (ADCH << 8);
+
+    return result;
 }
 
-// Get temperature in °C from the LM35 sensor
-float get_temperature(void) {
-    uint16_t adc_value = ADC_read(7); // Read from channel 7 (PORTA.7)
-    float voltage = (adc_value * V_REF) / ADC_RESOLUTION; // Convert ADC value to voltage
-    return voltage * TEMPERATURE_FACTOR; // Convert voltage to temperature
+float get_temperature(uint8_t channel) {
+    uint16_t adc_value = ADC_read(channel); // خواندن مقدار ADC
+    float temperature = (adc_value * V_REF * 100.0) / ADC_RESOLUTION; // تبدیل به دما (در °C)
+    return temperature;
 }
 
-// Display temperature on the LCD
-void display_temperature_on_LCD(void) {
+void display_temperature_continuously(uint8_t channel) {
     float previous_temperature = -1000.0; // Initialize with an invalid temperature
 
     while (1) {
         // Get the current temperature
-        float temperature = get_temperature();
+        float temperature = get_temperature(channel);
 
         // Check if the temperature has changed
         if ((int)(temperature * 100) != (int)(previous_temperature * 100)) {
@@ -76,4 +74,3 @@ void display_temperature_on_LCD(void) {
        
     }
 }
-

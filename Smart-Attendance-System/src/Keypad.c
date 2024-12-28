@@ -1,15 +1,15 @@
 #include "Keypad.h"
 
 void keypad_init(void) {
-    KEY_DDR = 0x0F;  
-    KEY_PRT = 0x70;  
+    KEY_DDR = (KEY_DDR & 0x80) | 0x0F; // تنظیم 4 بیت اول به 1، 3 بیت بعدی به 0 و بیت آخر بدون تغییر
+    KEY_PRT = (KEY_DDR & 0x80) | 0x70; // تنظیم 4 بیت اول به 0، 3 بیت بعدی به 1 و بیت آخر بدون تغییر
 }
 
 unsigned char scan_keypad(void) {
     unsigned char row, colloc;
 
     for (row = 0; row < 4; row++) {
-        KEY_PRT = 0xFF;
+        KEY_PRT = (KEY_DDR & 0x80) | 0x7F; // تنظیم 4 بیت اول به 0، 3 بیت بعدی به 1 و بیت آخر بدون تغییر
         KEY_PRT &= ~(1 << row);  
         _delay_us(5);  
         colloc = (KEY_PIN & 0x70);  
@@ -37,6 +37,6 @@ ISR(INT0_vect) {
         key_pressed = temp_key;  // Store the detected key
     }
 
-    KEY_PRT = 0x70; //اینجا دوباره حالت سطر هارو به حالت اولیه بر میکردونم
+    KEY_PRT = (KEY_DDR & 0x80) | 0x70; // تنظیم 4 بیت اول به 0، 3 بیت بعدی به 1 و بیت آخر بدون تغییر
 
 }
