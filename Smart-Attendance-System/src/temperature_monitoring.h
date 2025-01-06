@@ -6,7 +6,7 @@
 #include "lcd.h"
 #include "globals.h"
 
-#define V_REF 5
+#define V_REF 5.0
 #define ADC_RESOLUTION 1024.0
 void ADC_init(void);
 uint16_t ADC_read(uint8_t channel);
