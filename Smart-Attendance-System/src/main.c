@@ -157,10 +157,8 @@ void BUZZER() {
 unsigned long int get_student_id(void) {
     char Student_Code[9] = {0}; 
     unsigned char i = 0;
-
     LCD_clear();
     LCD_string("Enter Student Code:");
-
     while (1) {
         key_pressed = 0;
 
@@ -340,7 +338,7 @@ void View_Present_Students(){
 //**********************************************************************************************************
 void display_students() {
     uint16_t number_of_students = GET_NUM_OF_STUDENTS();
-    char arr[16];
+    char arr[50];
 
     // Display the number of present students
     sprintf(arr, "%d", number_of_students);
@@ -353,7 +351,7 @@ void display_students() {
     if (number_of_students != 0) {
         for (uint16_t i = 0; i < number_of_students; i++) {
             unsigned long int student_id = READ_STU_ID_FROM_EEPROM(i); 
-            sprintf(arr, "%ld", student_id);
+            sprintf(arr, "id : %ld", student_id);
             LCD_string(arr);
             _delay_ms(500);
             LCD_clear();
@@ -405,7 +403,7 @@ void Retrieve_Student_Data() {
 //**********************************************************************************************************
 uint32_t get_attendance_time() {
     
-    char Time_Input[4] = {0}; // Format: MMSS
+    char Time_Input[5] = {0}; // Format: MMSS
     unsigned char i = 0;
 
     LCD_clear();
@@ -457,7 +455,7 @@ uint32_t get_attendance_time() {
             }
         } else { // Handle invalid characters
             LCD_clear();
-            LCD_string("Invalid Char!");
+            LCD_string("ERROR!");
             _delay_ms(2000);
             memset(Time_Input, 0, sizeof(Time_Input)); // Reset input buffer
             i = 0; // Reset index
@@ -516,8 +514,9 @@ void Traffic_Monitoring() {
                 LCD_string(numberString);
                 _delay_ms(500);
             } else {
-                _delay_ms(500);  // Delay if count hasn't changed
+                _delay_ms(500);  
             }
         }
     }
 }
+//**********************************************************************************************************

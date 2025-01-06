@@ -11,7 +11,6 @@
 
 void EEPROM_Write(uint16_t address, uint8_t data);
 uint8_t EEPROM_Read(uint16_t address);
-
 void WRITE_STU_ID_IN_EEPROM(unsigned long int stuID);
 unsigned long int READ_STU_ID_FROM_EEPROM(uint16_t index);
 uint16_t GET_NUM_OF_STUDENTS();

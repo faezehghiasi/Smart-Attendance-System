@@ -1,18 +1,18 @@
 #include "ULTRASONIC.h"
 
 volatile int count=0;
-
+//**********************************************************************************************************
 void HCSR04Init() {
     US_DDR |= (1 << US_TRIG_POS); // Trigger pin as output
     US_DDR &= ~(1 << US_ECHO_POS); // Echo pin as input
 }
-
+//**********************************************************************************************************
 void HCSR04Trigger() {
     US_PORT |= (1 << US_TRIG_POS); // Set trigger pin high
     _delay_us(15);                  // Wait for 15 microseconds
     US_PORT &= ~(1 << US_TRIG_POS); // Set trigger pin low
 }
-
+//**********************************************************************************************************
 uint16_t GetPulseWidth() {
     uint32_t i, result;
 

@@ -19,4 +19,4 @@ void LCD_data(unsigned char data);
 void LCD_string(const char *str);
 void LCD_clear(void);
 
-#endif // LCD_H
+#endif
