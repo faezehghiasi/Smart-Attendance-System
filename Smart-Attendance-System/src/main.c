@@ -141,9 +141,9 @@ bool check_stu_id(char *stuId) {
 }
 //**********************************************************************************************************
 void Wrong_format_of_stu_ID() {
-    BUZZER();
-    LCD_command(0xC0);
+    LCD_clear();
     LCD_string("wrong format !");
+    BUZZER();
     _delay_ms(1000);
 }
 //**********************************************************************************************************
@@ -280,6 +280,7 @@ void return_to_main_menu(void) {
 void invalid_key_pressed(void) {
     LCD_clear();
     LCD_string("Invalid Key!");
+    BUZZER();
     _delay_ms(1000);
   
 }
@@ -353,7 +354,7 @@ void display_students() {
             unsigned long int student_id = READ_STU_ID_FROM_EEPROM(i); 
             sprintf(arr, "id : %ld", student_id);
             LCD_string(arr);
-            _delay_ms(500);
+            _delay_ms(1000);
             LCD_clear();
         }
         LCD_string("All students displayed");

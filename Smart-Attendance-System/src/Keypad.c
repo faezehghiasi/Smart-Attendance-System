@@ -9,7 +9,6 @@ void keypad_init(void) {
 //**********************************************************************************************************
 unsigned char scan_keypad(void) {
     unsigned char row, colloc;
-
     for (row = 0; row < 4; row++) {
         KEY_PRT = (KEY_DDR & 0x80) | 0x7F; 
         KEY_PRT &= ~(1 << row);  

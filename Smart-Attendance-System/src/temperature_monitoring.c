@@ -21,7 +21,7 @@ uint16_t ADC_read(uint8_t channel) {
 
 //**********************************************************************************************************
 float get_temperature(uint8_t channel) {
-    uint16_t adc_value = ADC_read(channel); 
+    uint16_t adc_value = ADC_read(channel);  //Vout
     // Vin = Vout * step size
     // step size = V_REF / ADC_RESOLUTION
     // Vin = Vout * (V_REF / ADC_RESOLUTION)

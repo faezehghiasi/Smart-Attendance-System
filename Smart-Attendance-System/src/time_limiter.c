@@ -15,6 +15,7 @@ void init_timer(uint32_t time_limit_sec) {
 
     TCCR0 = (1 << WGM01);        // CTC mode
     OCR0 = 249;                  // Compare match value for 1 ms (assuming 16 MHz clock, prescaler = 64)
+    
     TIMSK |= (1 << OCIE0);       // Enable Timer0 compare match interrupt
     
     TCCR0 |= (1 << CS01) | (1 << CS00); // Set prescaler to 64
