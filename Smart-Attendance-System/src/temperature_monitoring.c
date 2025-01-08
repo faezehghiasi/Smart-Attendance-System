@@ -18,7 +18,6 @@ uint16_t ADC_read(uint8_t channel) {
     result |= (ADCH << 8);
     return result;
 }
-
 //**********************************************************************************************************
 float get_temperature(uint8_t channel) {
     uint16_t adc_value = ADC_read(channel);  //Vout
