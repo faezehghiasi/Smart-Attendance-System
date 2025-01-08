@@ -19,8 +19,8 @@ Built using the **C programming language**, this project offers a robust and sca
 ## Features
 
 ### Main Functionalities
+
 1. **Attendance Initialization**:
-   - The system enters "Attendance Ready" mode, preparing for attendance registration.
    - **Submit Student Code**:
      - Students can enter their unique 8-digit ID via the keypad.
      - The system validates the format. Errors, such as invalid length or format, are displayed on the LCD, and the buzzer is activated for feedback.
@@ -28,9 +28,8 @@ Built using the **C programming language**, this project offers a robust and sca
      - This option allows users to return to the main menu.
 
 2. **Student Management**:
-   - Includes the following functionalities:
-     - **Search Students**: Enter a student ID to check if the student is present or absent.
-     - **Delete Students**: Enter a student ID to delete it from the records.
+   - **Search Students**: Enter a student ID to check if the student is present or absent.
+   - **Delete Students**: Enter a student ID to delete it from the records.
 
 3. **View Present Students**:
    - Displays the total number of present students.
