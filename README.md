@@ -20,38 +20,33 @@ Built using the **C programming language**, this project offers a robust and sca
 
 ### Main Functionalities
 1. **Attendance Initialization**:
-   - Enter "Attendance Ready" mode for seamless student attendance tracking.
+   - The system enters "Attendance Ready" mode, preparing for attendance registration.
+    - **Submit Student Code**:
+      - Students can enter their unique 8-digit ID via the keypad.
+      - The system validates the format. Errors, such as invalid length or format, are displayed on the LCD, and the buzzer is activated for feedback.
+   - **Exit**:
+      - This option allows users to return to the main menu.
 
-2. **Submit Student Code**:
-   - Students enter their unique 8-digit code using the keypad.
-   - The system validates the format and notifies errors via the buzzer and LCD.
+2. **Student Management**:
+   - Includes the following functionalities:
+     - **Search Students**: Enter a student ID to check if the student is present or absent.
+     - **Delete Students**: Enter a student ID to delete.
 
-3. **Exit**:
-   - Return to the main menu for other operations.
-
-4. **View Present Students**:
-   - Display the count and names of present students in real-time.
-
-5. **Student Management**:
-   - Add or delete student records.
-   - Perform searches to verify student attendance status.
+5. **View Present Students**:
+   - Displays the total number of present students.
+   - Lists the ids of present students on the LCD, updating dynamically.
 
 6. **Temperature Monitoring**:
-   - Monitor and display the classroom’s temperature using the LM35 sensor.
+   - Displays real-time environmental temperature using the LM35 sensor.
+   - Temperature values are converted from ADC readings and updated on the LCD.
 
-7. **Traffic Monitoring**:
-   - Real-time traffic analysis using an ultrasonic sensor for classroom congestion monitoring.
+7. **Retrieve Student Data**:
+   - Fetch stored student data from EEPROM.
+   - Transfer data via USART to external systems. Success or error messages are displayed on the LCD.
 
-8. **Retrieve Student Data**:
-   - Fetch student data from EEPROM or transfer via USART to an external system.
-
-### Advanced Options (Extra Credit)
-- Support for **RFID cards** to automate student identification.
-- Transition to **GLCD display** for enhanced visuals.
-- **Time constraints** for attendance submission (e.g., 15-minute window).
-- Prevention of duplicate attendance entries with warnings.
-- Automatic storage of attendance **time and date** for precise reporting.
-
+8. **Traffic Monitoring**:
+   - Monitors real-time classroom traffic using an ultrasonic sensor.
+   - Traffic data is displayed on the LCD for better classroom management.
 ---
 
 ## Components Used
@@ -80,30 +75,6 @@ Built using the **C programming language**, this project offers a robust and sca
 4. **Error Handling**:
    - Invalid inputs trigger error messages and alerts.
    - Duplicate attendance entries are prevented with appropriate warnings.
-
----
-
-## System Architecture
-
-### Hardware Configuration
-
-- **Keypad**: 4×3 matrix connected to PORTA.
-- **LCD**: 8-bit mode connected to PORTC and control pins on PORTD.
-- **Ultrasonic Sensor**: Trigger and Echo pins connected to PORTB.
-- **Temperature Sensor**: Analog output connected to ADC7 (PORTA.7).
-- **Buzzer**: Output on PORTB.2.
-- **USART**: TXD connected to PORTD.1.
-
-### Software Modules
-
-- **EEPROM Management**:
-  - Functions to add, delete, and search student IDs.
-- **Menu Navigation**:
-  - Intuitive menu system for smooth user interaction.
-- **Interrupt Handling**:
-  - INT0 interrupt for efficient keypad input detection.
-- **Data Conversion**:
-  - Analog-to-digital conversion for temperature monitoring.
 
 ---
 
