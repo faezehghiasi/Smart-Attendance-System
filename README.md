@@ -28,8 +28,10 @@ Built using the **C programming language**, this project offers a robust and sca
      - This option allows users to return to the main menu.
 
 2. **Student Management**:
-   - **Search Students**: Enter a student ID to check if the student is present or absent.
-   - **Delete Students**: Enter a student ID to delete it from the records.
+   - **Search Students**:
+      - Enter a student ID to check if the student is present or absent.
+   - **Delete Students**:
+      - Enter a student ID to delete it from the records.
 
 3. **View Present Students**:
    - Displays the total number of present students.
