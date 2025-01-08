@@ -21,32 +21,33 @@ Built using the **C programming language**, this project offers a robust and sca
 ### Main Functionalities
 1. **Attendance Initialization**:
    - The system enters "Attendance Ready" mode, preparing for attendance registration.
-    - **Submit Student Code**:
-      - Students can enter their unique 8-digit ID via the keypad.
-      - The system validates the format. Errors, such as invalid length or format, are displayed on the LCD, and the buzzer is activated for feedback.
+   - **Submit Student Code**:
+     - Students can enter their unique 8-digit ID via the keypad.
+     - The system validates the format. Errors, such as invalid length or format, are displayed on the LCD, and the buzzer is activated for feedback.
    - **Exit**:
-      - This option allows users to return to the main menu.
+     - This option allows users to return to the main menu.
 
 2. **Student Management**:
    - Includes the following functionalities:
      - **Search Students**: Enter a student ID to check if the student is present or absent.
-     - **Delete Students**: Enter a student ID to delete.
+     - **Delete Students**: Enter a student ID to delete it from the records.
 
-5. **View Present Students**:
+3. **View Present Students**:
    - Displays the total number of present students.
-   - Lists the ids of present students on the LCD, updating dynamically.
+   - Lists the IDs of present students on the LCD, updating dynamically.
 
-6. **Temperature Monitoring**:
+4. **Temperature Monitoring**:
    - Displays real-time environmental temperature using the LM35 sensor.
    - Temperature values are converted from ADC readings and updated on the LCD.
 
-7. **Retrieve Student Data**:
+5. **Retrieve Student Data**:
    - Fetch stored student data from EEPROM.
    - Transfer data via USART to external systems. Success or error messages are displayed on the LCD.
 
-8. **Traffic Monitoring**:
+6. **Traffic Monitoring**:
    - Monitors real-time classroom traffic using an ultrasonic sensor.
    - Traffic data is displayed on the LCD for better classroom management.
+
 ---
 
 ## Components Used
@@ -57,24 +58,6 @@ Built using the **C programming language**, this project offers a robust and sca
 - **Buzzer**: For audio feedback and error notifications.
 - **Ultrasonic Sensor**: For monitoring traffic.
 - **Temperature Sensor**: For environmental temperature tracking.
-
----
-
-## How It Works
-
-1. **Attendance Submission**:
-   - Students enter their 8-digit ID using the keypad.
-   - Input is validated, and feedback is provided via the LCD and buzzer.
-
-2. **Data Persistence**:
-   - Student IDs are securely stored in EEPROM to ensure data is retained after power loss.
-
-3. **Environmental Monitoring**:
-   - Temperature and traffic data are continuously monitored and displayed.
-
-4. **Error Handling**:
-   - Invalid inputs trigger error messages and alerts.
-   - Duplicate attendance entries are prevented with appropriate warnings.
 
 ---
 
