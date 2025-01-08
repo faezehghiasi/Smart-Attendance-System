@@ -70,3 +70,26 @@ Built using the **C programming language**, this project offers a robust and sca
 
    ```bash
    git clone https://github.com/your-username/attendance-system.git
+2. **Open the Proteus Simulation**:
+
+   - Navigate to the `simulation` folder in the repository.
+   - Open the `.pdsprj` file in **Proteus** to view and simulate the project.
+
+3. **Load the Hex File**:
+
+   - Inside the Proteus simulation, double-click on the ATmega32 microcontroller.
+   - In the configuration window, browse to the `hex` folder and select the provided `.hex` file.
+   - Apply the settings and close the configuration window.
+
+4. **Compile and Upload Code (Optional)**:
+
+   - If you want to modify the code, open the project in **Atmel Studio** from the `code` folder.
+   - Compile the project to generate a new `.hex` file.
+   - Replace the existing `.hex` file in the Proteus simulation with the newly generated one.
+
+5. **Run the Simulation**:
+
+   - Press the play button in **Proteus** to run the simulation.
+   - Interact with the system using the keypad and observe the LCD, buzzer, and other components.
+
+
