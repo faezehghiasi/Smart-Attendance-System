@@ -119,7 +119,7 @@ void display_Attendance_Ready_menu_page(){
 //**********************************************************************************************************
 void Submit_Student_Code() {
     unsigned long int studentCode = get_student_id();
-
+    if(studentCode == 0) return;
     if ( handle_student_search(studentCode)) {
         LCD_clear();
         LCD_string("Attendance already recorded.");
@@ -158,11 +158,20 @@ unsigned long int get_student_id(void) {
     char Student_Code[9] = {0}; 
     unsigned char i = 0;
     LCD_clear();
-    LCD_string("Enter Student Code:");
+    LCD_string("Enter Code:");  // Display the main prompt
+    LCD_command(0xC0);          // Move to the second line
+    LCD_string("Press * to exit");      // Display the exit hint in a separate line
+
     while (1) {
         key_pressed = 0;
 
-        while (key_pressed == 0);
+        while (key_pressed == 0);  // Wait for a key press
+
+        // Handle '*' to return to the main menu
+        if (key_pressed == '*') {
+            LCD_clear();
+            return 0; // Return 0 to indicate cancellation
+        }
 
         // Handle '#' as the end of input
         if (key_pressed == '#') {
@@ -173,28 +182,37 @@ unsigned long int get_student_id(void) {
                 memset(Student_Code, 0, sizeof(Student_Code)); 
                 i = 0; 
                 LCD_clear();
-                LCD_string("Enter Student Code:"); 
+                LCD_string("Enter Code:");
+                LCD_command(0xC0);  
+                LCD_string("Press * to exit"); 
             }
         } else if (key_pressed >= '0' && key_pressed <= '9') {
             if (i < 8) { 
                 Student_Code[i++] = key_pressed;
+                LCD_command(0x80 + 10 + i);  // Set cursor position after "Enter Code:"
                 LCD_data(key_pressed); 
             } else { // If user enters more than 8 digits
                 Wrong_format_of_stu_ID();
-                memset(Student_Code, 0, sizeof(Student_Code)); // Reset input buffer
-                i = 0; // Reset index
+                memset(Student_Code, 0, sizeof(Student_Code)); 
+                i = 0; 
                 LCD_clear();
-                LCD_string("Enter Student Code:"); 
+                LCD_string("Enter Code:");
+                LCD_command(0xC0);  
+                LCD_string("Press * to exit"); 
             }
         } else { // Handle invalid characters
             Wrong_format_of_stu_ID();
             memset(Student_Code, 0, sizeof(Student_Code)); 
             i = 0; 
             LCD_clear();
-            LCD_string("Enter Student Code:"); 
+            LCD_string("Enter Code:");
+            LCD_command(0xC0);  
+            LCD_string("Press * to exit"); 
         }
     }
 }
+
+
 //**********************************************************************************************************
 void Student_Management(void) {
     int current_page = 1;
@@ -207,6 +225,7 @@ void Student_Management(void) {
 
         if (key_pressed == '1' && current_page == 1) {
             unsigned long int studentCode = get_student_id();
+            if(studentCode == 0) return;
             if (handle_student_search(studentCode)) {
                 LCD_command(0xC0);
                 LCD_string("Student Present!");
@@ -218,6 +237,7 @@ void Student_Management(void) {
             }
         } else if (key_pressed == '2' && current_page == 1) {
             unsigned long int studentCode = get_student_id();
+            if(studentCode == 0) return;
             if (delete_student_from_eeprom(studentCode)) {
                 LCD_command(0xC0);
                 LCD_string("Student Deleted!");
@@ -339,7 +359,7 @@ void View_Present_Students(){
 //**********************************************************************************************************
 void display_students() {
     uint16_t number_of_students = GET_NUM_OF_STUDENTS();
-    char arr[50];
+    char arr[80];
 
     // Display the number of present students
     sprintf(arr, "%d", number_of_students);
@@ -352,7 +372,7 @@ void display_students() {
     if (number_of_students != 0) {
         for (uint16_t i = 0; i < number_of_students; i++) {
             unsigned long int student_id = READ_STU_ID_FROM_EEPROM(i); 
-            sprintf(arr, "id : %ld", student_id);
+            sprintf(arr, "Student Code : %ld", student_id);
             LCD_string(arr);
             _delay_ms(1000);
             LCD_clear();
