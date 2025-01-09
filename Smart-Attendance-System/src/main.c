@@ -135,7 +135,7 @@ void Submit_Student_Code() {
 
 //**********************************************************************************************************
 bool check_stu_id(char *stuId) {
-    if (strlen(stuId) != 8 || strncmp(stuId, "401", 3) != 0)
+    if (strlen(stuId) != 8)
         return false;
     return true;
 }
