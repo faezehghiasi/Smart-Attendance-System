@@ -108,3 +108,14 @@ void WRITE_STU_ID_IN_EEPROM_AT_INDEX(unsigned long int stuID, uint16_t index) {
     EEPROM_Write(address + 2, (stuID >> 8) & 0xFF);   // Write the third byte
     EEPROM_Write(address + 3, stuID & 0xFF);          // Write the fourth byte
 }
+//**********************************************************************************************************
+void CLEAR_EEPROM(void) {
+    uint16_t eeprom_size = 1024;  // Maximum size of EEPROM (adjust based on your microcontroller)
+    for (uint16_t address = 0; address < eeprom_size; address++) {
+        EEPROM_Write(address, 0x00);  // Write 0x00 to each byte
+        _delay_ms(4);  // Small delay to ensure write completion
+    }
+
+    // Reset the number of students to zero
+    SET_NUM_OF_STUDENTS(0);
+}

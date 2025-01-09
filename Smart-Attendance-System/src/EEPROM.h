@@ -18,5 +18,7 @@ void SET_NUM_OF_STUDENTS(uint16_t num_of_students);
 bool handle_student_search(unsigned long int stuID);
 void WRITE_STU_ID_IN_EEPROM_AT_INDEX(unsigned long int stuID, uint16_t index);
 bool delete_student_from_eeprom(unsigned long int studentCode);
+void CLEAR_EEPROM(void);
+
 
 #endif
