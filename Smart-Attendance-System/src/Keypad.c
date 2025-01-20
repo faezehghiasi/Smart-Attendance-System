@@ -31,11 +31,9 @@ void init_interrupt(void) {
 }
 //**********************************************************************************************************
 ISR(INT0_vect) {
-    // Scan the keypad when INT0 is triggered
     unsigned char temp_key = scan_keypad();
     if (temp_key != 0xFF) {  // Check if a valid key is detected
-        key_pressed = temp_key;  // Store the detected key
+        key_pressed = temp_key;  
     }
     KEY_PRT = (KEY_DDR & 0x80) | 0x70;
-
 }

@@ -7,7 +7,6 @@ void ADC_init(void) {
     ADMUX = (1 << REFS0); // Vref = AVCC
     ADMUX &= ~(1 << ADLAR); //right adjust the result
 }
-
 //**********************************************************************************************************
 uint16_t ADC_read(uint8_t channel) {
     ADMUX = (ADMUX & 0xF0) | (channel & 0x0F); 

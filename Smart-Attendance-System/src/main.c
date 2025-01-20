@@ -56,6 +56,7 @@ int main(void) {
                Attendance_Ready();
             } else if (key_pressed == '2') {
                 Student_Management();
+                return_to_main_menu(); 
             } else if (key_pressed == '3') {
                  View_Present_Students();
                  return_to_main_menu();   
@@ -158,22 +159,18 @@ unsigned long int get_student_id(void) {
     char Student_Code[9] = {0}; 
     unsigned char i = 0;
     LCD_clear();
-    LCD_string("Enter Code:");  // Display the main prompt
-    LCD_command(0xC0);          // Move to the second line
-    LCD_string("Press * to exit");      // Display the exit hint in a separate line
+    LCD_string("Enter Code:"); 
+    LCD_command(0xC0);          
+    LCD_string("Press * to exit");      
 
     while (1) {
         key_pressed = 0;
 
-        while (key_pressed == 0);  // Wait for a key press
-
-        // Handle '*' to return to the main menu
+        while (key_pressed == 0); 
         if (key_pressed == '*') {
             LCD_clear();
-            return 0; // Return 0 to indicate cancellation
+            return 0; 
         }
-
-        // Handle '#' as the end of input
         if (key_pressed == '#') {
             if (check_stu_id(Student_Code)) { 
                 return atol(Student_Code);   
@@ -189,9 +186,9 @@ unsigned long int get_student_id(void) {
         } else if (key_pressed >= '0' && key_pressed <= '9') {
             if (i < 8) { 
                 Student_Code[i++] = key_pressed;
-                LCD_command(0x80 + 10 + i);  // Set cursor position after "Enter Code:"
+                LCD_command(0x80 + 10 + i); 
                 LCD_data(key_pressed); 
-            } else { // If user enters more than 8 digits
+            } else { 
                 Wrong_format_of_stu_ID();
                 memset(Student_Code, 0, sizeof(Student_Code)); 
                 i = 0; 
@@ -200,7 +197,7 @@ unsigned long int get_student_id(void) {
                 LCD_command(0xC0);  
                 LCD_string("Press * to exit"); 
             }
-        } else { // Handle invalid characters
+        } else { 
             Wrong_format_of_stu_ID();
             memset(Student_Code, 0, sizeof(Student_Code)); 
             i = 0; 
@@ -227,11 +224,11 @@ void Student_Management(void) {
             unsigned long int studentCode = get_student_id();
             if(studentCode == 0) return;
             if (handle_student_search(studentCode)) {
-                LCD_command(0xC0);
+                LCD_clear();
                 LCD_string("Student Present!");
                 _delay_ms(1000);
             } else {
-                LCD_command(0xC0);
+                LCD_clear();
                 LCD_string("Student Absent!");
                 _delay_ms(1000);
             }
@@ -239,16 +236,15 @@ void Student_Management(void) {
             unsigned long int studentCode = get_student_id();
             if(studentCode == 0) return;
             if (delete_student_from_eeprom(studentCode)) {
-                LCD_command(0xC0);
+                LCD_clear();
                 LCD_string("Student Deleted!");
                 _delay_ms(1000);
             } else {
-                LCD_command(0xC0);
+                LCD_clear();
                 LCD_string("Not Found!");
                 _delay_ms(1000);
             }
         } else if (key_pressed == '3') {
-            return_to_main_menu();
             break;
         } else if (key_pressed == '#') {
             current_page++;
@@ -314,15 +310,9 @@ void Attendance_Ready() {
             init_timer(attendance_time);
             time_set = true;
         }
-        
         display_Attendance_Ready_menu_page();
-        
-        // Reset key press state
         key_pressed = 0;
-        // Wait for a key press or timer expiry
         while (key_pressed == 0 && !is_time_up());
-
-        // If time is up, exit the loop
         if (is_time_up()) {
             LCD_clear();
             LCD_string("Time's up!");
@@ -330,8 +320,6 @@ void Attendance_Ready() {
             return_to_main_menu();
             return;
         }
-
-        // Handle key press actions
         switch (key_pressed) {
             case '1':
                 LCD_clear();
@@ -341,7 +329,7 @@ void Attendance_Ready() {
             case '2':
                 TCCR0 = 0; 
                 return_to_main_menu();
-                return; // Exit the function
+                return; 
 
             default:
                 invalid_key_pressed();
@@ -360,15 +348,11 @@ void View_Present_Students(){
 void display_students() {
     uint16_t number_of_students = GET_NUM_OF_STUDENTS();
     char arr[80];
-
-    // Display the number of present students
     sprintf(arr, "%d", number_of_students);
     LCD_string("Present students: ");
     LCD_string(arr);
     _delay_ms(1000);
     LCD_clear();
-
-    // If there are students, display their IDs
     if (number_of_students != 0) {
         for (uint16_t i = 0; i < number_of_students; i++) {
             unsigned long int student_id = READ_STU_ID_FROM_EEPROM(i); 
@@ -389,19 +373,15 @@ void display_students() {
 void Retrieve_Student_Data() {
 
     int number_of_students = GET_NUM_OF_STUDENTS();
-
-    // If no students have submitted data
     if (number_of_students == 0) {
         LCD_string("No students submitted yet");
         _delay_ms(1000);
         return;
     } else {
         LCD_string("Retrieving student data...");
-        _delay_ms(1000);  // Delay to show the message
+        _delay_ms(1000);  
 
         char arr[9];
-
-        // Loop through each student and retrieve their ID
         for (uint16_t i = 0; i < number_of_students; i++) {
             unsigned long int student_id = READ_STU_ID_FROM_EEPROM(i); 
             sprintf(arr, "%ld", student_id);
@@ -409,12 +389,8 @@ void Retrieve_Student_Data() {
             USART_Transmit_Data('\r');
             _delay_ms(500);
         }
-
-        // Indicate the end of the student data
         USART_Transmit_string("-----------------\r");
         _delay_ms(500);
-
-        // Display a success message on the LCD
         LCD_clear();
         LCD_string("Data Sent Successfully!");
         _delay_ms(1000);
@@ -433,53 +409,44 @@ uint32_t get_attendance_time() {
     while (1) {
         key_pressed = 0;
 
-        // Wait for key press
         while (key_pressed == 0);
-
-        // Handle '#' as the end of input
         if (key_pressed == '#') {
-            if (i == 4) { // Ensure the input is 4 digits long
+            if (i == 4) { 
                 LCD_clear();
                 LCD_string("Time recorded!");
                 _delay_ms(500);
-                
-                // Convert MMSS format to total seconds
                 uint32_t minutes = (Time_Input[0] - '0') * 10 + (Time_Input[1] - '0');
-                uint32_t seconds = (Time_Input[2] - '0') * 10 + (Time_Input[3] - '0');
-
-                // Set the timer with total seconds (convert to milliseconds)
-                init_timer((minutes * 60 * 1000) + (seconds * 1000)); 
-                
+                uint32_t seconds = (Time_Input[2] - '0') * 10 + (Time_Input[3] - '0');                
                 // Return total time in seconds
                 return (minutes * 60 + seconds);
-            } else { // Invalid input length
+            } else { 
                 LCD_clear();
                 LCD_string("Invalid Time!");
                 _delay_ms(2000);
-                memset(Time_Input, 0, sizeof(Time_Input)); // Reset input buffer
-                i = 0; // Reset index
+                memset(Time_Input, 0, sizeof(Time_Input)); 
+                i = 0;
                 LCD_clear();
                 LCD_string("Enter Time (MMSS): ");
             }
         } else if (key_pressed >= '0' && key_pressed <= '9') {
-            if (i < 4) { // Accept up to 4 digits
+            if (i < 4) { 
                 Time_Input[i++] = key_pressed;
-                LCD_data(key_pressed); // Display the input digit on LCD
-            } else { // If more than 4 digits are entered
+                LCD_data(key_pressed); 
+            } else {
                 LCD_clear();
                 LCD_string("Invalid Time!");
                 _delay_ms(2000);
-                memset(Time_Input, 0, sizeof(Time_Input)); // Reset input buffer
-                i = 0; // Reset index
+                memset(Time_Input, 0, sizeof(Time_Input)); 
+                i = 0; 
                 LCD_clear();
                 LCD_string("Enter Time (MMSS): ");
             }
-        } else { // Handle invalid characters
+        } else { 
             LCD_clear();
             LCD_string("ERROR!");
             _delay_ms(2000);
-            memset(Time_Input, 0, sizeof(Time_Input)); // Reset input buffer
-            i = 0; // Reset index
+            memset(Time_Input, 0, sizeof(Time_Input));
+            i = 0; 
             LCD_clear();
             LCD_string("Enter Time (MMSS): ");
         }
@@ -488,49 +455,43 @@ uint32_t get_attendance_time() {
 
 //**********************************************************************************************************
 void Traffic_Monitoring() {
-    char numberString[16];  // Buffer to hold distance string
-    uint16_t pulseWidth;    // Pulse width from echo
-    int distance;           // Calculated distance
-    int previous_count = -1;  // Store previous count to avoid unnecessary updates
+    char numberString[16]; 
+    uint16_t pulseWidth;    
+    int distance;          
+    int previous_count = -1;  
 
-    HCSR04Init();           // Initialize ultrasonic sensor
+    HCSR04Init();          
 
     while (1) {
         if (key_pressed == '*') {
-            break;  // Exit the loop if '#' is pressed
+            break; 
         }
-        _delay_ms(100);  // Delay for sensor stability
+        _delay_ms(100); 
 
         HCSR04Trigger();              // Send trigger pulse
         pulseWidth = GetPulseWidth(); // Measure echo pulse
 
         if (pulseWidth == US_ERROR) {
             LCD_clear();
-            LCD_string("Error");  // Display error message
+            LCD_string("Error"); 
         } else if (pulseWidth == US_NO_OBSTACLE) {
             LCD_clear();
-            LCD_string("No Obstacle");  // Display message when no obstacle is detected
+            LCD_string("No Obstacle");  
         } else {
             // Calculate the distance in cm
             distance = (int)((pulseWidth * 0.034 / 2) + 0.5);
-
-            // Display distance on LCD
-            sprintf(numberString, "%d", distance); // Convert distance to string
+            sprintf(numberString, "%d", distance); 
             LCD_clear();
             LCD_string("Distance: ");
             LCD_string(numberString); 
             LCD_string(" cm");
-
-            // Counting logic based on distance
             if (distance < 6) {
-                count++;  // Increment count if distance is below threshold
+                count++;  
             }
-
-            // Update count on LCD only if it changes
             if (count != previous_count) {
                 previous_count = count;
                 sprintf(numberString, "%d", count);
-                LCD_command(0xC0);  // Move cursor to the second line of LCD
+                LCD_command(0xC0);  
                 LCD_string("Count: ");
                 LCD_string(numberString);
                 _delay_ms(500);
